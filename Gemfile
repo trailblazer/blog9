@@ -25,6 +25,7 @@ gem "trailblazer-developer"
 gem "trailblazer-workflow", path: "../trailblazer-workflow"
 gem "trailblazer-activity-implementation", path: "../trailblazer-activity-implementation"
 gem "trailblazer-endpoint", path: "../trailblazer-endpoint"
+gem "reform-rails"
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
@@ -41,6 +42,7 @@ group :development do
 end
 
 group :test do
+  gem "minitest"
   # Adds support for Capybara system testing and selenium driver
   gem 'capybara', '>= 2.15'
   gem 'selenium-webdriver'
