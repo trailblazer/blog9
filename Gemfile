@@ -21,7 +21,7 @@ gem 'webpacker', '~> 4.0'
 gem 'bootsnap', '>= 1.4.2', require: false
 
 gem "trailblazer", ">= 2.1.0"
-gem "trailblazer-developer"
+gem "trailblazer-developer", path: "../trailblazer-developer"
 gem "trailblazer-workflow", path: "../trailblazer-workflow"
 gem "trailblazer-activity-implementation", path: "../trailblazer-activity-implementation"
 gem "trailblazer-endpoint", path: "../trailblazer-endpoint"
@@ -33,6 +33,7 @@ group :development, :test do
 end
 
 group :development do
+gem "trailblazer-generator", path: "../trailblazer-generator"
   # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
   gem 'web-console', '>= 3.3.0'
   gem 'listen', '~> 3.2'
