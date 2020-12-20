@@ -8,14 +8,15 @@ Moment =Trailblazer::Workflow::Moment::DSL
         web:  Workflow::Lane::Write::WriteWeb
       },
       messages: {
-        [:web, "create!"]   => [:lib, "create?"],
-        [:lib, "created!"]  => [:web, "created?"],
+        [:web, "create!"]   => [:lib, "catch-before-?Create!"],
+        [:lib, "throw-after-?Create!"]  => [:web, "created?"],
+        [:lib, "create_invalid!"]  => [:web, "create_invalid?"],
       },
       options: {
         dictionary: Trailblazer::Workflow::Moment.Dictionary(
           lanes,
 
-          ["web:new?",            ->(process_model:) { true }, Moment.start()],
+          ["web:new?",            ->(process_model:) { true }, Moment.start(), Moment.start()],
           # ["web:view?",           ->(process_model:) { true }, Moment.at("a")],
           # ["web:duplicate?",      ->(process_model:) { process_model }, Moment.at("a")],
           # ["web:delete?",         ->(process_model:) { process_model }, Moment.at("a")],

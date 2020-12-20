@@ -2,14 +2,14 @@
 module Workflow
   module Lane
     json         = File.read("../pro-backend/test/fixtures/blog.post.TRANSFORMED.json")
-    intermediate = Trailblazer::Workflow::Generate::Collaboration.Lane("post.lib", JSON[json], start_id: "create?")
+    intermediate = Trailblazer::Workflow::Generate::Collaboration.Lane("post.lib", JSON[json], start_id: "catch-before-?Create!")
 
     activity = Trailblazer::Activity::Railway
 
     PostLib = Trailblazer::Workflow::Collaboration.implement(
       intermediate,
       {
-        "Create" => activity.Subprocess(Post::Operation::Create),
+        "?Create!" => activity.Subprocess(Post::Operation::Create),
         "?Update!" => activity.Subprocess(Post::Operation::Update),
         "?Notify approver!" => activity.Subprocess(Post::Operation::NotifyEditor),
         "?Delete!" => activity.Subprocess(Post::Operation::Delete),
