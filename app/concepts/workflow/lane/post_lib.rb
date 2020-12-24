@@ -1,6 +1,7 @@
 # DISCUSS: this is a lane, not a Collaboration!
 module Workflow
   module Lane
+    # json         = File.read("app/concepts/workflow/blog.post.01.json")
     json         = File.read("../pro-backend/test/fixtures/blog.post.TRANSFORMED.json")
     intermediate = Trailblazer::Workflow::Generate::Collaboration.Lane("post.lib", JSON[json], start_id: "catch-before-?Create!")
 

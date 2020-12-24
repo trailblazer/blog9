@@ -2,6 +2,7 @@
 module Workflow
   module Lane
     module Write
+      # json         = File.read("app/concepts/workflow/blog.post.01.json")
       json         = File.read("../pro-backend/test/fixtures/blog.post.TRANSFORMED.json")
       intermediate = Trailblazer::Workflow::Generate::Collaboration.Lane("post.writer.ui.web", JSON[json], start_id: "new?")
 

@@ -25,6 +25,7 @@ gem "trailblazer-developer", path: "../trailblazer-developer"
 gem "trailblazer-workflow", path: "../trailblazer-workflow"
 gem "trailblazer-activity-implementation", path: "../trailblazer-activity-implementation"
 gem "trailblazer-endpoint", path: "../trailblazer-endpoint"
+gem "trailblazer-context", path: "../trailblazer-context"
 gem "reform-rails"
 
 group :development, :test do
@@ -40,10 +41,14 @@ gem "trailblazer-generator", path: "../trailblazer-generator"
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
   gem 'spring-watcher-listen', '~> 2.0.0'
+  gem "faraday"
+  gem "multi_json"
 end
 
 group :test do
   gem "minitest"
+  gem "trailblazer-test"
+
   # Adds support for Capybara system testing and selenium driver
   gem 'capybara', '>= 2.15'
   gem 'selenium-webdriver'

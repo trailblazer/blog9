@@ -11,12 +11,17 @@ Moment =Trailblazer::Workflow::Moment::DSL
         [:web, "create!"]   => [:lib, "catch-before-?Create!"],
         [:lib, "throw-after-?Create!"]  => [:web, "created?"],
         [:lib, "create_invalid!"]  => [:web, "create_invalid?"],
+        [:web, "update!"]   => [:lib, "catch-before-?Update!"],
+        [:lib, "throw-after-?Update!"]  => [:web, "updated?"],
+        [:lib, "update_invalid!"]  => [:web, "update_invalid?"],
       },
       options: {
         dictionary: Trailblazer::Workflow::Moment.Dictionary(
           lanes,
 
-          ["web:new?",            ->(process_model:) { true }, Moment.start(), Moment.start()],
+          ["web:new?",                  ->(process_model:) { process_model.nil? }, Moment.start(), Moment.start()],
+          ["web:edit_form?",            ->(process_model:) { process_model.state == "created" }, Moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), Moment.before("edit_form?", "request_approval?")],
+          ["web:edit_form_submitted?",  ->(process_model:) { ["created", "updated"].include?(process_model.state)  }, Moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), Moment.before("edit_form_submitted?", "edit_cancel?")],
           # ["web:view?",           ->(process_model:) { true }, Moment.at("a")],
           # ["web:duplicate?",      ->(process_model:) { process_model }, Moment.at("a")],
           # ["web:delete?",         ->(process_model:) { process_model }, Moment.at("a")],
