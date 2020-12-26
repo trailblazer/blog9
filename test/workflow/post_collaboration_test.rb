@@ -38,7 +38,7 @@ class PostCollaborationTest < Minitest::Spec
   # invalid data
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:new?"))
 
-    assert_position ctx, moment.before("catch-before-?Create!"), moment.before("new?")
+    assert_position ctx, moment.before("catch-before-?Create!"), moment.before("new?"), moment.start()
     assert_exposes ctx[:process_model],
       persisted?: false
 
@@ -47,7 +47,7 @@ class PostCollaborationTest < Minitest::Spec
 
   process_model = ctx[:process_model]
 
-    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form?", "request_approval?")
+    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form?", "request_approval?"), moment.start()
     assert_exposes ctx[:process_model],
       content: text,
       state:   "created"
@@ -56,7 +56,7 @@ class PostCollaborationTest < Minitest::Spec
   # render edit form
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:edit_form?", process_model: ctx[:process_model]))
 
-    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form_submitted?", "edit_cancel?")
+    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form_submitted?", "edit_cancel?"), moment.start()
     assert_exposes ctx[:process_model],
       content: text,
       state:   "created"
@@ -64,17 +64,26 @@ class PostCollaborationTest < Minitest::Spec
   # submit invalid data
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:edit_form_submitted?", process_model: process_model, params: {post: {content: ""}}))
 
-    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form_submitted?", "edit_cancel?")
+    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form_submitted?", "edit_cancel?"), moment.start()
 
   # cancel edit
 
   # submit processable data
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:edit_form_submitted?", process_model: ctx[:process_model], params: {post: {content: new_text = "That was really great!"}}))
 
-    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form?", "request_approval?")
+    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form?", "request_approval?"), moment.start()
     assert_exposes ctx[:process_model],
       content: new_text,
       state:   "updated"
+
+# --------- REQUEST APPROVALL
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:request_approval?", process_model: ctx[:process_model], params: {}))
+
+    assert_position ctx, moment.before("catch-before-?Reject!", "catch-before-?Approve!"), moment.before("approved?", "change_requested?"), moment.before("review?")
+    assert_exposes ctx[:process_model],
+      content: new_text,
+      state:   "waiting for approval",
+      reviews: [1]
 
 
   end

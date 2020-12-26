@@ -1,0 +1,774 @@
+{
+  "elements": [
+    {
+      "id": "post.writer.ui.web",
+      "type": "Lane",
+      "linksTo": [
+
+      ],
+      "data": {
+      },
+      "label": "post.writer.ui.web"
+    },
+    {
+      "id": "created?",
+      "type": "IntermediateEventCatchMessage",
+      "linksTo": [
+        {
+          "target": "GatewayNone-kir3kzem"
+        }
+      ],
+      "data": {
+      },
+      "label": "created?",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "create_invalid?",
+      "type": "IntermediateEventCatchMessage",
+      "linksTo": [
+        {
+          "target": "GatewayEventbased-kir49sfs"
+        }
+      ],
+      "data": {
+      },
+      "label": "create_invalid?",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "GatewayNone-kir3kzem",
+      "type": "GatewayNone",
+      "linksTo": [
+        {
+          "target": "edit_form?"
+        },
+        {
+          "target": "request_approval?"
+        }
+      ],
+      "data": {
+      },
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "approved?",
+      "type": "IntermediateEventCatchMessage",
+      "linksTo": [
+
+      ],
+      "data": {
+      },
+      "label": "approved?",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "GatewayEventbased-kir49sfs",
+      "type": "GatewayEventbased",
+      "linksTo": [
+        {
+          "target": "new?"
+        }
+      ],
+      "data": {
+      },
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "change_requested?",
+      "type": "IntermediateEventCatchMessage",
+      "linksTo": [
+        {
+          "target": "revise_form?"
+        }
+      ],
+      "data": {
+      },
+      "label": "change_requested?",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "update!",
+      "type": "IntermediateEventThrowMessage",
+      "linksTo": [
+        {
+          "target": "GatewayEventbased-kir6qdgc"
+        },
+        {
+          "target": "?Update!",
+          "message": true
+        }
+      ],
+      "data": {
+      },
+      "label": "update!",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "GatewayEventbased-kir6qdgc",
+      "type": "GatewayEventbased",
+      "linksTo": [
+        {
+          "target": "updated?"
+        },
+        {
+          "target": "update_invalid?"
+        }
+      ],
+      "data": {
+      },
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "updated?",
+      "type": "IntermediateEventCatchMessage",
+      "linksTo": [
+        {
+          "target": "GatewayNone-kir3kzem"
+        }
+      ],
+      "data": {
+      },
+      "label": "updated?",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "update_invalid?",
+      "type": "IntermediateEventCatchMessage",
+      "linksTo": [
+        {
+          "target": "GatewayNone-kir6z41k"
+        }
+      ],
+      "data": {
+      },
+      "label": "update_invalid?",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "edit_form?",
+      "type": "EndEventCancel",
+      "linksTo": [
+        {
+          "target": "GatewayNone-kir6z41k"
+        }
+      ],
+      "data": {
+      },
+      "label": "edit_form?",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "GatewayNone-kir6z41k",
+      "type": "GatewayNone",
+      "linksTo": [
+        {
+          "target": "edit_form_\nsubmitted?"
+        },
+        {
+          "target": "edit_cancel?"
+        }
+      ],
+      "data": {
+      },
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "edit_form_\nsubmitted?",
+      "type": "EndEventCancel",
+      "linksTo": [
+        {
+          "target": "update!"
+        }
+      ],
+      "data": {
+      },
+      "label": "edit_form_\nsubmitted?",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "edit_cancel?",
+      "type": "EndEventCancel",
+      "linksTo": [
+        {
+          "target": "GatewayNone-kir3kzem"
+        }
+      ],
+      "data": {
+      },
+      "label": "edit_cancel?",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "request_approval?",
+      "type": "EndEventCancel",
+      "linksTo": [
+        {
+          "target": "request_approval!"
+        }
+      ],
+      "data": {
+      },
+      "label": "request_approval?",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "request_approval!",
+      "type": "IntermediateEventThrowMessage",
+      "linksTo": [
+        {
+          "target": "GatewayEventbased-kir75oaf"
+        },
+        {
+          "target": "?Notify approver!",
+          "message": true
+        }
+      ],
+      "data": {
+      },
+      "label": "request_approval!\n",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "GatewayEventbased-kir75oaf",
+      "type": "GatewayEventbased",
+      "linksTo": [
+        {
+          "target": "change_requested?"
+        },
+        {
+          "target": "approved?"
+        }
+      ],
+      "data": {
+      },
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "revise_form?",
+      "type": "EndEventCancel",
+      "linksTo": [
+        {
+          "target": "GatewayNone-kir7krcj"
+        }
+      ],
+      "data": {
+      },
+      "label": "revise_form?\n",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "GatewayNone-kir7krcj",
+      "type": "GatewayNone",
+      "linksTo": [
+        {
+          "target": "revise_form_cancel?"
+        },
+        {
+          "target": "revise_form_submitted?"
+        }
+      ],
+      "data": {
+      },
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "revise_form_cancel?",
+      "type": "EndEventCancel",
+      "linksTo": [
+        {
+          "target": "revise_form?"
+        }
+      ],
+      "data": {
+      },
+      "label": "revise_form_cancel?",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "GatewayEventbased-kir7q0ne",
+      "type": "GatewayEventbased",
+      "linksTo": [
+        {
+          "target": "revise_updated?"
+        },
+        {
+          "target": "revise_invalid?"
+        }
+      ],
+      "data": {
+      },
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "revise_updated?",
+      "type": "IntermediateEventCatchMessage",
+      "linksTo": [
+        {
+          "target": "GatewayEventbased-kir9zdlx"
+        }
+      ],
+      "data": {
+      },
+      "label": "revise_updated?",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "revise_invalid?",
+      "type": "IntermediateEventCatchMessage",
+      "linksTo": [
+        {
+          "target": "revise_form?"
+        }
+      ],
+      "data": {
+      },
+      "label": "revise_invalid?",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "revise_form_submitted?",
+      "type": "EndEventCancel",
+      "linksTo": [
+        {
+          "target": "revise_update!"
+        }
+      ],
+      "data": {
+      },
+      "label": "revise_form_submitted?",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "GatewayEventbased-kir9zdlx",
+      "type": "GatewayEventbased",
+      "linksTo": [
+        {
+          "target": "request_approval?"
+        },
+        {
+          "target": "revise_form?"
+        }
+      ],
+      "data": {
+      },
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "post.lib",
+      "type": "Lane",
+      "linksTo": [
+
+      ],
+      "data": {
+      },
+      "label": "post.lib"
+    },
+    {
+      "id": "GatewayNone-kirdizw5",
+      "type": "GatewayNone",
+      "linksTo": [
+        {
+          "target": "?Update!"
+        },
+        {
+          "target": "?Notify approver!"
+        }
+      ],
+      "data": {
+      },
+      "parent": "post.lib"
+    },
+    {
+      "id": "?Update!",
+      "type": "Task",
+      "linksTo": [
+        {
+          "target": "update_invalid!"
+        },
+        {
+          "target": "GatewayNone-kirdizw5"
+        },
+        {
+          "target": "updated?",
+          "message": true
+        }
+      ],
+      "data": {
+      },
+      "label": "?Update!",
+      "parent": "post.lib"
+    },
+    {
+      "id": "create_invalid!",
+      "type": "IntermediateEventThrowMessage",
+      "linksTo": [
+        {
+          "target": "GatewayEventbased-kirdk4t1"
+        },
+        {
+          "target": "create_invalid?",
+          "message": true
+        }
+      ],
+      "data": {
+      },
+      "label": "create_invalid!",
+      "parent": "post.lib"
+    },
+    {
+      "id": "GatewayEventbased-kirdk4t1",
+      "type": "GatewayEventbased",
+      "linksTo": [
+        {
+          "target": "?Create!"
+        }
+      ],
+      "data": {
+      },
+      "parent": "post.lib"
+    },
+    {
+      "id": "update_invalid!",
+      "type": "IntermediateEventThrowMessage",
+      "linksTo": [
+        {
+          "target": "GatewayNone-kirdizw5"
+        },
+        {
+          "target": "update_invalid?",
+          "message": true
+        }
+      ],
+      "data": {
+      },
+      "label": "update_invalid!",
+      "parent": "post.lib"
+    },
+    {
+      "id": "?Notify approver!",
+      "type": "Task",
+      "linksTo": [
+        {
+          "target": "GatewayNone-kirdnw0n"
+        },
+        {
+          "target": "review?",
+          "message": true
+        }
+      ],
+      "data": {
+      },
+      "label": "?Notify approver!",
+      "parent": "post.lib"
+    },
+    {
+      "id": "GatewayNone-kirdnw0n",
+      "type": "GatewayNone",
+      "linksTo": [
+        {
+          "target": "?Reject!"
+        },
+        {
+          "target": "?Approve!"
+        }
+      ],
+      "data": {
+      },
+      "parent": "post.lib"
+    },
+    {
+      "id": "?Reject!",
+      "type": "Task",
+      "linksTo": [
+        {
+          "target": "?Update!"
+        },
+        {
+          "target": "change_requested?",
+          "message": true
+        }
+      ],
+      "data": {
+      },
+      "label": "?Reject!",
+      "parent": "post.lib"
+    },
+    {
+      "id": "?Approve!",
+      "type": "Task",
+      "linksTo": [
+        {
+          "target": "GatewayNone-kirdpn59"
+        },
+        {
+          "target": "approved?",
+          "message": true
+        }
+      ],
+      "data": {
+      },
+      "label": "?Approve!",
+      "parent": "post.lib"
+    },
+    {
+      "id": "GatewayNone-kirdpn59",
+      "type": "GatewayNone",
+      "linksTo": [
+        {
+          "target": "?Update!"
+        },
+        {
+          "target": "?Delete!"
+        },
+        {
+          "target": "?Publish!"
+        }
+      ],
+      "data": {
+      },
+      "parent": "post.lib"
+    },
+    {
+      "id": "?Delete!",
+      "type": "Task",
+      "linksTo": [
+        {
+          "target": "EndEventTerminate-kirdsubi"
+        }
+      ],
+      "data": {
+      },
+      "label": "?Delete!",
+      "parent": "post.lib"
+    },
+    {
+      "id": "?Publish!",
+      "type": "Task",
+      "linksTo": [
+        {
+          "target": "?Archive!"
+        }
+      ],
+      "data": {
+      },
+      "label": "?Publish!",
+      "parent": "post.lib"
+    },
+    {
+      "id": "?Archive!",
+      "type": "Task",
+      "linksTo": [
+        {
+          "target": "EndEventTerminate-kirdsubi"
+        }
+      ],
+      "data": {
+      },
+      "label": "?Archive!",
+      "parent": "post.lib"
+    },
+    {
+      "id": "EndEventTerminate-kirdsubi",
+      "type": "EndEventTerminate",
+      "linksTo": [
+
+      ],
+      "data": {
+      },
+      "parent": "post.lib"
+    },
+    {
+      "id": "create!",
+      "type": "IntermediateEventThrowMessage",
+      "linksTo": [
+        {
+          "target": "GatewayEventbased-kixar8yp"
+        },
+        {
+          "target": "?Create!",
+          "message": true
+        }
+      ],
+      "data": {
+      },
+      "label": "create!",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "post.editor.review.ui.web",
+      "type": "Lane",
+      "linksTo": [
+
+      ],
+      "data": {
+      },
+      "label": "post.editor.review.ui.web"
+    },
+    {
+      "id": "revise_update!",
+      "type": "IntermediateEventThrowMessage",
+      "linksTo": [
+        {
+          "target": "GatewayEventbased-kir7q0ne"
+        },
+        {
+          "target": "?Update!",
+          "message": true
+        }
+      ],
+      "data": {
+      },
+      "label": "revise_update!",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "GatewayNone-kisu6hw2",
+      "type": "GatewayNone",
+      "linksTo": [
+        {
+          "target": "approve?"
+        },
+        {
+          "target": "suggest_changes?"
+        }
+      ],
+      "data": {
+      },
+      "parent": "post.editor.review.ui.web"
+    },
+    {
+      "id": "approve?",
+      "type": "EndEventCancel",
+      "linksTo": [
+        {
+          "target": "approve!"
+        }
+      ],
+      "data": {
+      },
+      "label": "approve?",
+      "parent": "post.editor.review.ui.web"
+    },
+    {
+      "id": "suggest_changes?",
+      "type": "EndEventCancel",
+      "linksTo": [
+        {
+          "target": "suggest_changes!"
+        }
+      ],
+      "data": {
+      },
+      "label": "suggest_changes?",
+      "parent": "post.editor.review.ui.web"
+    },
+    {
+      "id": "review?",
+      "type": "EndEventCancel",
+      "linksTo": [
+        {
+          "target": "GatewayNone-kisu6hw2"
+        }
+      ],
+      "data": {
+      },
+      "label": "review?",
+      "parent": "post.editor.review.ui.web"
+    },
+    {
+      "id": "suggest_changes!",
+      "type": "IntermediateEventThrowMessage",
+      "linksTo": [
+        {
+          "target": "GatewayEventbased-kisupzpi"
+        },
+        {
+          "target": "?Reject!",
+          "message": true
+        }
+      ],
+      "data": {
+      },
+      "label": "suggest_changes!",
+      "parent": "post.editor.review.ui.web"
+    },
+    {
+      "id": "approve!",
+      "type": "IntermediateEventThrowMessage",
+      "linksTo": [
+        {
+          "target": "GatewayEventbased-kisupzpi"
+        },
+        {
+          "target": "?Approve!",
+          "message": true
+        }
+      ],
+      "data": {
+      },
+      "label": "approve!",
+      "parent": "post.editor.review.ui.web"
+    },
+    {
+      "id": "GatewayEventbased-kisupzpi",
+      "type": "GatewayEventbased",
+      "linksTo": [
+        {
+          "target": "review?"
+        }
+      ],
+      "data": {
+      },
+      "parent": "post.editor.review.ui.web"
+    },
+    {
+      "id": "?Create!",
+      "type": "Task",
+      "linksTo": [
+        {
+          "target": "create_invalid!"
+        },
+        {
+          "target": "created?",
+          "message": true
+        },
+        {
+          "target": "GatewayNone-kirdizw5"
+        }
+      ],
+      "data": {
+      },
+      "label": "?Create!",
+      "parent": "post.lib"
+    },
+    {
+      "id": "new?",
+      "type": "EndEventCancel",
+      "linksTo": [
+        {
+          "target": "create!"
+        }
+      ],
+      "data": {
+      },
+      "label": "new?",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "GatewayEventbased-kixar8yp",
+      "type": "GatewayEventbased",
+      "linksTo": [
+        {
+          "target": "created?"
+        },
+        {
+          "target": "create_invalid?"
+        }
+      ],
+      "data": {
+      },
+      "parent": "post.writer.ui.web"
+    }
+  ]
+}
