@@ -29,6 +29,7 @@ class PostCollaborationTest < Minitest::Spec
   # advance:
   #   * exception when moment couldn't be computed
 
+    # TODO: test create --> request (without update)
   it "what" do
     endpoint = Trailblazer::Workflow.Advance(activity: Workflow::Collaboration::WriteWeb)
     Trailblazer::Endpoint::Protocol::Controller.insert_copy_to_domain_ctx!(endpoint, {:process_model => :model}, before: :invoke_workflow) # in our OPs, we use {ctx[:model]}. In the outer endpoint, we use {:process_model}
@@ -76,15 +77,27 @@ class PostCollaborationTest < Minitest::Spec
       content: new_text,
       state:   "updated"
 
-# --------- REQUEST APPROVALL
+# --------- REQUEST APPROVAL
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:request_approval?", process_model: ctx[:process_model], params: {}))
 
     assert_position ctx, moment.before("catch-before-?Reject!", "catch-before-?Approve!"), moment.before("approved?", "change_requested?"), moment.before("review?")
     assert_exposes ctx[:process_model],
       content: new_text,
-      state:   "waiting for approval",
-      reviews: [1]
+      state:   "waiting for review",
+      reviews: Review.where(post_id: ctx[:process_model].id)
 
+  # reject/suggest changes
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("review:suggest_changes?", process_model: ctx[:process_model], params: {review: {suggestions: "Line 1 sucks"}}))
+    # TODO: validate suggestions, make collection
 
+    assert_position ctx, moment.before("catch-before-?Update!"), moment.at("suspend-revise_form?"), moment.before("Start.default")
+    assert_exposes ctx[:process_model],
+      content: new_text,
+      state:   "edit requested",
+      reviews: Review.where(post_id: ctx[:process_model].id)
+
+    assert_exposes ctx[:process_model].reviews[0],
+      suggestions: "Line 1 sucks",
+      state: "waiting for edit"
   end
 end

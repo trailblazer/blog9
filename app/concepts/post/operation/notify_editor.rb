@@ -1,15 +1,15 @@
 module Post::Operation
   class NotifyEditor < Trailblazer::Operation
-    step :send_notification
+    step :start_review
     step :state
     # step Contract::Persist()
 
-    def send_notification(ctx, model:, **)
-      true
+    def start_review(ctx, model:, **)
+      ctx[:review] = Review.create(post_id: model.id, state: "waiting for editor")
     end
 
     def state(ctx, model:, **)
-      model.state = "waiting for approval"
+      model.state = "waiting for review"
       model.save
     end
   end
