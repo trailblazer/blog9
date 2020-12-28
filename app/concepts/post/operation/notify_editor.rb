@@ -5,7 +5,9 @@ module Post::Operation
     # step Contract::Persist()
 
     def start_review(ctx, model:, **)
-      ctx[:review] = Review.create(post_id: model.id, state: "waiting for editor")
+      ctx[:review] = Review.create(post_id: model.id
+        #, state: "waiting for editor"
+        )
     end
 
     def state(ctx, model:, **)

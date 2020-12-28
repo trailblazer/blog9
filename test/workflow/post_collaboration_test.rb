@@ -87,7 +87,8 @@ class PostCollaborationTest < Minitest::Spec
       reviews: Review.where(post_id: ctx[:process_model].id)
 
   # reject/suggest changes
-    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("review:suggest_changes?", process_model: ctx[:process_model], params: {review: {suggestions: "Line 1 sucks"}}))
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("review:suggest_changes?", process_model: ctx[:process_model],
+      params: {review: {suggestions: "Line 1 sucks"}}))
     # TODO: validate suggestions, make collection
 
     assert_position ctx, moment.before("catch-before-?Update!"), moment.at("suspend-revise_form?"), moment.before("Start.default")
@@ -96,8 +97,8 @@ class PostCollaborationTest < Minitest::Spec
       state:   "edit requested",
       reviews: Review.where(post_id: ctx[:process_model].id)
 
-    assert_exposes ctx[:process_model].reviews[0],
-      suggestions: "Line 1 sucks",
-      state: "waiting for edit"
+    assert_exposes ctx[:domain_ctx][:review],
+      suggestions: "Line 1 sucks"#,
+      # state: "waiting for edit"
   end
 end
