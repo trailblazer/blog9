@@ -97,8 +97,34 @@ class PostCollaborationTest < Minitest::Spec
       state:   "edit requested",
       reviews: Review.where(post_id: ctx[:process_model].id)
 
-    assert_exposes ctx[:domain_ctx][:review],
+    assert_exposes ctx[:domain_ctx][:review], # DISCUSS: make this easily exposable?
       suggestions: "Line 1 sucks"#,
       # state: "waiting for edit"
+
+# wrong: submit web:request_approval?
+# wrong: submit web:edit_form?
+# wrong: submit web:edit_form_submitted?
+
+# --------- REVISE
+  # click "Revise form"
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:revise_form?", process_model: ctx[:process_model], params: {}))
+
+    assert_position ctx, moment.before("catch-before-?Update!"), moment.before("revise_form_submitted?", "revise_form_cancel?"), moment.before("Start.default")
+    assert_exposes ctx[:process_model],
+      content: new_text,
+      state:   "edit requested",
+      reviews: Review.where(post_id: ctx[:process_model].id)
+
+  # TODO: click "cancel revise"
+
+  # click "Submit revise form"
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:revise_form_submitted?", process_model: ctx[:process_model], params: {content: "Even better!"}))
+
+    assert_position ctx, moment.before("catch-before-?Update!"), moment.before("revise_form_submitted?", "revise_form_cancel?"), moment.before("Start.default")
+    assert_exposes ctx[:process_model],
+      content: new_text,
+      state:   "edit requested",
+      reviews: Review.where(post_id: ctx[:process_model].id)
+
   end
 end
