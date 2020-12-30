@@ -91,7 +91,7 @@ class PostCollaborationTest < Minitest::Spec
       params: {review: {suggestions: "Line 1 sucks"}}))
     # TODO: validate suggestions, make collection
 
-    assert_position ctx, moment.before("catch-before-?Update!"), moment.at("suspend-revise_form?"), moment.before("Start.default")
+    assert_position ctx, moment.before("catch-before-?Revise!"), moment.at("suspend-revise_form?"), moment.before("Start.default")
     assert_exposes ctx[:process_model],
       content: new_text,
       state:   "edit requested",
@@ -109,7 +109,7 @@ class PostCollaborationTest < Minitest::Spec
   # click "Revise form"
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:revise_form?", process_model: ctx[:process_model], params: {}))
 
-    assert_position ctx, moment.before("catch-before-?Update!"), moment.before("revise_form_submitted?", "revise_form_cancel?"), moment.before("Start.default")
+    assert_position ctx, moment.before("catch-before-?Revise!"), moment.before("revise_form_submitted?", "revise_form_cancel?"), moment.before("Start.default")
     assert_exposes ctx[:process_model],
       content: new_text,
       state:   "edit requested",
@@ -118,12 +118,12 @@ class PostCollaborationTest < Minitest::Spec
   # TODO: click "cancel revise"
 
   # click "Submit revise form"
-    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:revise_form_submitted?", process_model: ctx[:process_model], params: {content: "Even better!"}))
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:revise_form_submitted?", process_model: ctx[:process_model], params: {post: {content: "Even better!"}}))
 
-    assert_position ctx, moment.before("catch-before-?Update!"), moment.before("revise_form_submitted?", "revise_form_cancel?"), moment.before("Start.default")
+    assert_position ctx, moment.before("catch-before-?Revise!", "catch-before-?Notify approver!"), moment.before("revise_form?", "request_approval?"), moment.before("Start.default")
     assert_exposes ctx[:process_model],
-      content: new_text,
-      state:   "edit requested",
+      content: "Even better!",
+      state:   "edit requested", # FIXME: "revised, edit requested"
       reviews: Review.where(post_id: ctx[:process_model].id)
 
   end

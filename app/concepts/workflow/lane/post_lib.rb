@@ -12,6 +12,7 @@ module Workflow
       {
         "?Create!" => activity.Subprocess(Post::Operation::Create),
         "?Update!" => activity.Subprocess(Post::Operation::Update),
+        "?Revise!" => activity.Subprocess(Post::Operation::Revise),
         "?Notify approver!" => activity.Subprocess(Post::Operation::NotifyEditor),
         "?Delete!" => activity.Subprocess(Post::Operation::Delete),
         "?Reject!" => [activity.Subprocess(Post::Operation::Reject), input: {:model => :post, params: :params}, output: {:post => :model, :model => :review
