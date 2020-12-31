@@ -3,7 +3,7 @@ module Post::Operation
     step :state
 
     def state(ctx, model:, **)
-      model.state = "approved"
+      model.state = "approved, ready to publish"
       model.save
     end
   end

@@ -123,7 +123,31 @@ class PostCollaborationTest < Minitest::Spec
     assert_position ctx, moment.before("catch-before-?Revise!", "catch-before-?Notify approver!"), moment.before("revise_form?", "request_approval?"), moment.before("Start.default")
     assert_exposes ctx[:process_model],
       content: "Even better!",
-      state:   "edit requested", # FIXME: "revised, edit requested"
+      state:   "revised, review requested", # FIXME: "revised, edit requested"
+      reviews: Review.where(post_id: ctx[:process_model].id)
+
+  # TODO: invalid revise form
+
+  # Submit to editor (request approval)
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:request_approval?", process_model: ctx[:process_model], params: {post: {content: "Even better!"}}))
+
+    assert_position ctx, moment.before("catch-before-?Reject!", "catch-before-?Approve!"), moment.before("approved?", "change_requested?"), moment.before("review?")
+
+ctx[:process_model].reload # FIXME: why?
+    assert_exposes ctx[:process_model],
+      content: "Even better!",
+      state:   "waiting for review",
+      reviews: Review.where(post_id: ctx[:process_model].id),
+      id: ->(asserted:, **) { asserted.reviews.size == 2 }
+
+  # Approve
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("review:approve?", process_model: ctx[:process_model],
+      params: {}))
+
+    assert_position ctx, moment.before("catch-before-?Publish!", "catch-before-?Delete!", "catch-before-?Update!"), moment.before("delete?", "publish?"), moment.before("Start.default")
+    assert_exposes ctx[:process_model],
+      content: "Even better!",
+      state:   "approved, ready to publish",
       reviews: Review.where(post_id: ctx[:process_model].id)
 
   end
