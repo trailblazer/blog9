@@ -24,6 +24,8 @@ Moment =Trailblazer::Workflow::Moment::DSL
         [:web, "revise_update!"] => [:lib, "catch-before-?Revise!"],
         [:lib, "revise_invalid!"] => [:web, "revise_invalid?"],
         [:lib, "throw-after-?Revise!"] => [:web, "revise_updated?"],
+        [:lib, "throw-after-?Publish!"] => [:web, "published?"],
+        [:web, "publish!"] => [:lib, "catch-before-?Publish!"],
       },
       options: {
         dictionary: Trailblazer::Workflow::Moment.Dictionary(
@@ -37,6 +39,7 @@ Moment =Trailblazer::Workflow::Moment::DSL
           ["review:approve?",  ->(process_model:) { ["waiting for review"].include?(process_model.state)  }, Moment.before("catch-before-?Reject!", "catch-before-?Approve!"), Moment.before("approved?", "change_requested?"), Moment.before("suggest_changes?", "approve?")],
           ["web:revise_form?",         ->(process_model:) { process_model.state == "edit requested" }, Moment.before("catch-before-?Revise!"), Moment.before("revise_form?"), Moment.before("Start.default")],
           ["web:revise_form_submitted?",         ->(process_model:) { process_model.state == "edit requested" }, Moment.before("catch-before-?Revise!"), Moment.before("revise_form_submitted?", "revise_form_cancel?"), Moment.before("Start.default")],
+          ["web:publish?",         ->(process_model:) { process_model.state == "approved, ready to publish" }, Moment.before("catch-before-?Publish!", "catch-before-?Delete!", "catch-before-?Update!"), Moment.before("publish?", "delete?"), Moment.before("Start.default")],
           # ["web:view?",           ->(process_model:) { true }, Moment.at("a"), Moment.start()],
           # ["web:duplicate?",      ->(process_model:) { process_model }, Moment.at("a")],
           # ["web:delete?",         ->(process_model:) { process_model }, Moment.at("a")],

@@ -150,5 +150,18 @@ ctx[:process_model].reload # FIXME: why?
       state:   "approved, ready to publish",
       reviews: Review.where(post_id: ctx[:process_model].id)
 
+  # Publish
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:publish?", process_model: ctx[:process_model],
+      params: {}))
+
+    assert_position ctx, moment.before("catch-before-?Archive!"), moment.before("archive?"), moment.before("Start.default")
+    assert_exposes ctx[:process_model],
+      content: "Even better!",
+      state:   "published",
+      reviews: Review.where(post_id: ctx[:process_model].id)
+
+
+  # TODO: delete
+  # TODO: archive
   end
 end
