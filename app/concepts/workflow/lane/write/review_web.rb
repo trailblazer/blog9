@@ -4,7 +4,7 @@ module Workflow
     module Write
       # json         = File.read("app/concepts/workflow/blog.post.01.json")
       json         = File.read("../pro-backend/test/fixtures/blog.post.TRANSFORMED.json")
-      intermediate = Trailblazer::Workflow::Generate::Collaboration.Lane("post.editor.review.ui.web", JSON[json], start_id: "Start.default")
+      intermediate, messages = Trailblazer::Workflow::Generate::Collaboration.Lane("post.editor.review.ui.web", JSON[json], start_id: "Start.default")
 
       activity = Trailblazer::Activity::Railway
 
@@ -19,10 +19,9 @@ module Workflow
           # "?Approve!" => activity.Subprocess(Post::Operation::Approve),
           # "?Archive!" => activity.Subprocess(Post::Operation::Archive),
           # "?Publish!" => activity.Subprocess(Post::Operation::Publish),
-        }
+        },
+        config_merge: {lane_name: "post.editor.review.ui.web", messages: messages}
       )
-
-      puts ReviewWeb.to_h[:nodes]
     end
   end
 end
