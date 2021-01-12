@@ -37,18 +37,18 @@ class PostCollaborationTest < Minitest::Spec
 
 # --------- CREATE
   # invalid data
-    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:new?"))
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:new?!"))
 
-    assert_position ctx, moment.before("catch-before-?Create!"), moment.before("new?"), moment.start()
+    assert_position ctx, moment.before("catch-before-?Create!"), moment.before("new?!"), moment.start()
     assert_exposes ctx[:process_model],
       persisted?: false
 
   # processable data
-    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:new?", params: {post: {content: text = "That was great!"}}))
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:new?!", params: {post: {content: text = "That was great!"}}))
 
   process_model = ctx[:process_model]
 
-    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form?", "request_approval?"), moment.start()
+    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form?", "request_approval?!"), moment.start()
     assert_exposes ctx[:process_model],
       content: text,
       state:   "created"
@@ -57,28 +57,28 @@ class PostCollaborationTest < Minitest::Spec
   # render edit form
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:edit_form?", process_model: ctx[:process_model]))
 
-    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form_submitted?", "edit_cancel?"), moment.start()
+    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form_submitted?!", "edit_cancel?"), moment.start()
     assert_exposes ctx[:process_model],
       content: text,
       state:   "created"
 
   # submit invalid data
-    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:edit_form_submitted?", process_model: process_model, params: {post: {content: ""}}))
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:edit_form_submitted?!", process_model: process_model, params: {post: {content: ""}}))
 
-    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form_submitted?", "edit_cancel?"), moment.start()
+    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form_submitted?!", "edit_cancel?"), moment.start()
 
   # cancel edit
 
   # submit processable data
-    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:edit_form_submitted?", process_model: ctx[:process_model], params: {post: {content: new_text = "That was really great!"}}))
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:edit_form_submitted?!", process_model: ctx[:process_model], params: {post: {content: new_text = "That was really great!"}}))
 
-    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form?", "request_approval?"), moment.start()
+    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form?", "request_approval?!"), moment.start()
     assert_exposes ctx[:process_model],
       content: new_text,
       state:   "updated"
 
 # --------- REQUEST APPROVAL
-    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:request_approval?", process_model: ctx[:process_model], params: {}))
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:request_approval?!", process_model: ctx[:process_model], params: {}))
 
     assert_position ctx, moment.before("catch-before-?Reject!", "catch-before-?Approve!"), moment.before("approved?", "change_requested?"), moment.before("review?")
     assert_exposes ctx[:process_model],
@@ -109,7 +109,7 @@ class PostCollaborationTest < Minitest::Spec
   # click "Revise form"
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:revise_form?", process_model: ctx[:process_model], params: {}))
 
-    assert_position ctx, moment.before("catch-before-?Revise!"), moment.before("revise_form_submitted?", "revise_form_cancel?"), moment.before("Start.default")
+    assert_position ctx, moment.before("catch-before-?Revise!"), moment.before("revise_form_submitted?!", "revise_form_cancel?"), moment.before("Start.default")
     assert_exposes ctx[:process_model],
       content: new_text,
       state:   "edit requested",
@@ -118,9 +118,9 @@ class PostCollaborationTest < Minitest::Spec
   # TODO: click "cancel revise"
 
   # click "Submit revise form"
-    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:revise_form_submitted?", process_model: ctx[:process_model], params: {post: {content: "Even better!"}}))
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:revise_form_submitted?!", process_model: ctx[:process_model], params: {post: {content: "Even better!"}}))
 
-    assert_position ctx, moment.before("catch-before-?Revise!", "catch-before-?Notify approver!"), moment.before("revise_form?", "request_approval?"), moment.before("Start.default")
+    assert_position ctx, moment.before("catch-before-?Revise!", "catch-before-?Notify approver!"), moment.before("revise_form?", "request_approval?!"), moment.before("Start.default")
     assert_exposes ctx[:process_model],
       content: "Even better!",
       state:   "revised, review requested", # FIXME: "revised, edit requested"
@@ -129,7 +129,7 @@ class PostCollaborationTest < Minitest::Spec
   # TODO: invalid revise form
 
   # Submit to editor (request approval)
-    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:request_approval?", process_model: ctx[:process_model], params: {post: {content: "Even better!"}}))
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:request_approval?!", process_model: ctx[:process_model], params: {post: {content: "Even better!"}}))
 
     assert_position ctx, moment.before("catch-before-?Reject!", "catch-before-?Approve!"), moment.before("approved?", "change_requested?"), moment.before("review?")
 
@@ -144,24 +144,24 @@ ctx[:process_model].reload # FIXME: why?
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("review:approve?", process_model: ctx[:process_model],
       params: {}))
 
-    assert_position ctx, moment.before("catch-before-?Publish!", "catch-before-?Delete!", "catch-before-?Update!"), moment.before("delete?", "publish?"), moment.before("Start.default")
+    assert_position ctx, moment.before("catch-before-?Publish!", "catch-before-?Delete!", "catch-before-?Update!"), moment.before("delete?", "publish?!"), moment.before("Start.default")
     assert_exposes ctx[:process_model],
       content: "Even better!",
       state:   "approved, ready to publish",
       reviews: Review.where(post_id: ctx[:process_model].id)
 
   # Publish
-    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:publish?", process_model: ctx[:process_model],
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:publish?!", process_model: ctx[:process_model],
       params: {}))
 
-    assert_position ctx, moment.before("catch-before-?Archive!"), moment.before("archive?"), moment.before("Start.default")
+    assert_position ctx, moment.before("catch-before-?Archive!"), moment.before("archive?!"), moment.before("Start.default")
     assert_exposes ctx[:process_model],
       content: "Even better!",
       state:   "published",
       reviews: Review.where(post_id: ctx[:process_model].id)
 
   # Archive
-    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:archive?", process_model: ctx[:process_model],
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:archive?!", process_model: ctx[:process_model],
       params: {}))
 
     assert_position ctx, moment.at("success"), moment.at("success"), moment.before("Start.default")
