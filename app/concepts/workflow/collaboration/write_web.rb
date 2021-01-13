@@ -9,7 +9,8 @@ module Workflow
       }
     ) do
       [
-        ["web:new?!",                  ->(process_model:) { process_model.nil? }, start(), start(), start()],
+        ["web:new_form?",              ->(process_model:) { process_model.nil? }, start(), start(), start()],
+        ["web:new?!",                  ->(process_model:) { process_model.nil? }, start(), before("new?!"), start()],
         ["web:edit_form?",            ->(process_model:) { process_model.state == "created" }, before("catch-before-?Update!", "catch-before-?Notify approver!"), before("edit_form?", "request_approval?!"), start()],
         ["web:edit_form_submitted?!",  ->(process_model:) { ["created", "updated"].include?(process_model.state)  }, before("catch-before-?Update!", "catch-before-?Notify approver!"), before("edit_form_submitted?!", "edit_cancel?"), start()],
         ["web:request_approval?!",  ->(process_model:) { ["created", "updated", "revised, review requested"].include?(process_model.state)  }, before("catch-before-?Update!", "catch-before-?Notify approver!"), before("request_approval?!", "edit_form?"), start()],

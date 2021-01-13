@@ -36,6 +36,12 @@ class PostCollaborationTest < Minitest::Spec
     Trailblazer::Endpoint::Protocol::Controller.insert_copy_from_domain_ctx!(endpoint, {:model => :process_model}, after: :invoke_workflow) # in our OPs, we use {ctx[:model]}. In the outer endpoint, we use {:process_model}
 
 # --------- CREATE
+  # new form
+  signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:new_form?"))
+
+  assert_position ctx, moment.start(), moment.before("new?!"), moment.start()
+  assert_nil ctx[:process_model]
+
   # invalid data
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:new?!"))
 
