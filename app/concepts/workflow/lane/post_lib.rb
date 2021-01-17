@@ -1,6 +1,6 @@
 module Workflow
   module Lane
-    PostLib = Trailblazer::Workflow::Collaboration.Lane(json: "../pro-backend/test/fixtures/blog.post.TRANSFORMED.json", lane: "post.lib", start_id: "catch-before-?Create!") do
+    PostLib = Trailblazer::Workflow::Collaboration.Lane(json: "app/concepts/workflow/blog.post-9.3.json", lane: "post.lib", start_id: "catch-before-?Create!") do
       {
         "?Create!"          => Subprocess(Post::Operation::Create),
         "?Update!"          => Subprocess(Post::Operation::Update),

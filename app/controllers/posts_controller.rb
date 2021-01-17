@@ -22,8 +22,6 @@ class PostsController < ApplicationController::Web
       process_model:          nil,                              # TODO: this is necessary for Moment and should be documented properly! # workflow/moment.rb:83:in `evaluate_condition'
 
 
-      # suspend_activity: Diagram::Workflow::Web, # FIXME: not used in all cases!
-
       # errors:                 Trailblazer::Endpoint::Adapter::API::Errors.new,
       # error_representer:      FunctionController::Ep_FIXME::ErrorsRepresenter,
       # request:                controller.request,
