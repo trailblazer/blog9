@@ -37,10 +37,13 @@ class PostCollaborationTest < Minitest::Spec
 
 # --------- CREATE
   # new form
-  signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:new_form?"))
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:new_form?"))
 
-  assert_position ctx, moment.start(), moment.before("new?!"), moment.start()
-  assert_nil ctx[:process_model]
+    assert_position ctx, moment.start(), moment.before("new?!"), moment.start()
+    assert_exposes ctx[:process_model], #
+      persisted?: false
+    assert_exposes ctx[:domain_ctx][:contract], # DISCUSS: do we want {:contract} in the endpoint_ctx?
+      content: nil
 
   # invalid data
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:new?!"))

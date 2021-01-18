@@ -2,7 +2,13 @@ class ApplicationController < ActionController::Base
   #  These are our application-specific runtime options.
   def self.default_options_for_endpoint(ctx, **)
     {
-      flow_options: {throw: [], context_alias: {"contract.default"=>:contract}},
+      flow_options: {
+        throw:           [],
+        context_options: {
+          container_class: Trailblazer::Context::Container::WithAliases,
+          aliases: {"contract.default"=>:contract}
+        },
+      },
     }
   end
 

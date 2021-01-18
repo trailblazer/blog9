@@ -6,7 +6,7 @@ class PostTest < ActionDispatch::SystemTestCase
   test "Blog post lifecycle" do
     visit "/posts/new_form" # FIXME: change to {click_button "New Post"}
 
-    assert_selector "div", text: "yo"
+    assert_selector "div", text: "yo Post::Operation::Create::Form"
     # assert_response :success
   end
 end

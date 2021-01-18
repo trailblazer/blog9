@@ -7,8 +7,8 @@ class PostsController < ApplicationController::Web
   endpoint "web:new_form?", find_process_model: false, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
 
   def new_form # new_form
-    endpoint "web:new_form?", success_before: "web:new?!" do |ctx, **|
-      render html: "<div>yo</div>".html_safe
+    endpoint "web:new_form?", success_before: "web:new?!" do |ctx, contract:, **|
+      render html: "<div>yo #{contract.class}</div>".html_safe
     end
   end
 

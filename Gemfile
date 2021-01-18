@@ -21,16 +21,22 @@ gem 'webpacker', '~> 4.0'
 gem 'bootsnap', '>= 1.4.2', require: false
 
 gem "trailblazer", ">= 2.1.0"
-gem "trailblazer-developer", path: "../trailblazer-developer"
+# gem "trailblazer-developer", path: "../trailblazer-developer"
+gem "trailblazer-developer", "0.0.17"
 gem "trailblazer-workflow", path: "../trailblazer-workflow"
 gem "trailblazer-activity-implementation", path: "../trailblazer-activity-implementation"
-gem "trailblazer-endpoint", path: "../trailblazer-endpoint"
+# gem "trailblazer-endpoint", path: "../trailblazer-endpoint"
+gem "trailblazer-endpoint", "0.0.8"
 gem "trailblazer-context", path: "../trailblazer-context"
 gem "reform-rails"
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+  # gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+
+  # gem "minitest-spec-rails"
+  # gem "minitest-rails"
+  # gem "minitest-rails-capybara", "3.0.2"
 end
 
 group :development do
