@@ -3,6 +3,10 @@ module Post::Write
     class New  < Trailblazer::Cell
       include SimpleForm::ActionViewExtensions::FormHelper
 
+      def header
+        @options[:header]
+      end
+
       def form_url
         @options[:form_url]
       end
