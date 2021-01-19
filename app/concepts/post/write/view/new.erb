@@ -1,0 +1,5 @@
+<%= simple_form_for(model, url: form_url, as: :post) do |f| %>
+    <div><%= f.error_notification %></div>
+    <div><%= f.input :content, label: "Your text", as: :text, required: false %></div>
+    <div><%= f.button :submit, value: "Submit!" %></div>
+<% end %>

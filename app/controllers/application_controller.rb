@@ -6,7 +6,7 @@ class ApplicationController < ActionController::Base
         throw:           [],
         context_options: {
           container_class: Trailblazer::Context::Container::WithAliases,
-          aliases: {"contract.default"=>:contract}
+          aliases: {:"contract.default"=>:contract} # NOTE the :"contract.default"
         },
       },
     }

@@ -1,7 +1,6 @@
 module Post::Operation
   class Create < Trailblazer::Operation
     class Form < Reform::Form
-
       property :content
       property :state, parse: false
 

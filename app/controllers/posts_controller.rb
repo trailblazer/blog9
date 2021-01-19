@@ -5,11 +5,28 @@ class PostsController < ApplicationController::Web
   end
 
   endpoint "web:new_form?", find_process_model: false, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
+  endpoint "web:new?!",     find_process_model: false, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
+  endpoint "view",          find_process_model: true, domain_activity: Post::Operation::View # not everything has to be a workflow/part of the state machine.
 
   def new_form # new_form
     endpoint "web:new_form?", success_before: "web:new?!" do |ctx, contract:, **|
-      render html: "<div>yo #{contract.class}</div>".html_safe
+      render html: cell(Post::Write::Cell::New, contract, form_url: create_post_path)
     end
+  end
+
+  def create
+    endpoint "web:new?!", success_before: "web:request_approval?!" do |ctx, model:, **|
+      redirect_to view_post_path(id: model.id)
+    end.Or do |ctx, contract:, **| # render erroring form
+      render html: cell(Post::Write::Cell::New, contract, form_url: create_post_path)
+    end
+  end
+
+  def view
+    endpoint "view" do |ctx, model:, **|
+      render html: cell(Post::Write::Cell::View, model)
+    end
+    # DOCUMENT: how endpoint does the Or() part for you automatically
   end
 
   private def endpoint(event_name, **options)
@@ -26,8 +43,8 @@ class PostsController < ApplicationController::Web
       # error_representer:      FunctionController::Ep_FIXME::ErrorsRepresenter,
       # request:                controller.request,
 
-      # process_model_class:    Diagram,
-      # process_model_id:       controller.params[:id],
+      process_model_class:    Post,
+      process_model_id:       controller.params[:id],
       # encrypted_resume_data:  controller.params[:wf_session],
 
       # collaboration: Diagram::Collaboration::Web,
