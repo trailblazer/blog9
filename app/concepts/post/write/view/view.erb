@@ -5,5 +5,6 @@
 </div>
 
 <div class="actions">
-  <%= link_to "Edit post", edit_post_path(model) %>
+  <%= link_to "Edit post", edit_post_path(model) if able?("edit_form?") %>
+  <%= link_to "Request approval from editor", request_approval_path(id: model.id) if able?("request_approval?!") %>
 </div>

@@ -4,11 +4,7 @@ class PostTest < ActionDispatch::SystemTestCase
   driven_by :selenium, using: :headless_chrome
 
   def assert_actions(*actions)
-    found_actions = []
-
-    page.find(".actions a") do |el|
-      found_actions << el.text
-    end
+    found_actions = page.find_all(".actions a").collect{ |el| el.text }
 
     assert_equal actions, found_actions
   end
@@ -36,7 +32,7 @@ class PostTest < ActionDispatch::SystemTestCase
     assert_selector "h1", text: "View Post" # TODO: introduce headline
     assert_selector ".post_content", text: "Are we live?"
     # assert_selector "a[href='/posts/']"
-    assert_actions("Edit post")
+    assert_actions("Edit post", "Request approval from editor")
 
     click_on "Edit post"
 

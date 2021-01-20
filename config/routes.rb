@@ -6,6 +6,7 @@ Rails.application.routes.draw do
   get "/posts/view/:id"   => "posts#view", as: :view_post
   get "/posts/edit/:id"   => "posts#edit", as: :edit_post
   patch "/posts/:id/update"    => "posts#update", as: :update_post
+  get "/post/:id/request_approval" => "posts#request_approval", as: :request_approval
 
   get "/my" => "posts#dashboard"
 end
