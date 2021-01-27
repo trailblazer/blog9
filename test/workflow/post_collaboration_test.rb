@@ -9,7 +9,9 @@ class PostCollaborationTest < Minitest::Spec
   def ctx_for(event_name, params: {}, process_model: nil, activity: Workflow::Collaboration::WriteWeb)
     domain_ctx = {params: params}
 
-    ctx = {activity: activity, event_name: event_name, process_model: process_model, domain_ctx: domain_ctx} # TODO: require domain_ctx if scoping on.
+    ctx = {activity: activity, event_name: event_name, process_model: process_model, domain_ctx: domain_ctx,
+      success_before: "web:new?!" # DISCUSS: # we don't need success flag here
+    } # TODO: require domain_ctx if scoping on.
   end
 
   # TODO: abstract to endpoint/test
@@ -57,7 +59,7 @@ class PostCollaborationTest < Minitest::Spec
 
   process_model = ctx[:process_model]
 
-    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form?", "request_approval?!"), moment.start()
+    assert_position ctx, moment.suspend(after: "?Create!"), moment.before("edit_form?", "request_approval?!"), moment.start()
     assert_exposes ctx[:process_model],
       content: text,
       state:   "created"
@@ -66,7 +68,7 @@ class PostCollaborationTest < Minitest::Spec
   # render edit form
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:edit_form?", process_model: ctx[:process_model]))
 
-    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form_submitted?!", "edit_cancel?"), moment.start()
+    assert_position ctx, moment.suspend(after: "?Create!"), moment.before("edit_form_submitted?!", "edit_cancel?"), moment.start()
     assert_exposes ctx[:process_model],
       content: text,
       state:   "created"
@@ -74,14 +76,14 @@ class PostCollaborationTest < Minitest::Spec
   # submit invalid data
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:edit_form_submitted?!", process_model: process_model, params: {post: {content: ""}}))
 
-    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form_submitted?!", "edit_cancel?"), moment.start()
+    assert_position ctx, moment.suspend(after: "?Create!"), moment.before("edit_form_submitted?!", "edit_cancel?"), moment.start()
 
   # cancel edit
 
   # submit processable data
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:edit_form_submitted?!", process_model: ctx[:process_model], params: {post: {content: new_text = "That was really great!"}}))
 
-    assert_position ctx, moment.before("catch-before-?Update!", "catch-before-?Notify approver!"), moment.before("edit_form?", "request_approval?!"), moment.start()
+    assert_position ctx, moment.suspend(after: "?Update!"), moment.before("edit_form?", "request_approval?!"), moment.start()
     assert_exposes ctx[:process_model],
       content: new_text,
       state:   "updated"
@@ -89,7 +91,7 @@ class PostCollaborationTest < Minitest::Spec
 # --------- REQUEST APPROVAL
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:request_approval?!", process_model: ctx[:process_model], params: {}))
 
-    assert_position ctx, moment.before("catch-before-?Reject!", "catch-before-?Approve!"), moment.before("approved?", "change_requested?"), moment.before("review?")
+    assert_position ctx, moment.suspend(after: "?Notify approver!"), moment.before("approved?", "change_requested?"), moment.before("review?")
     assert_exposes ctx[:process_model],
       content: new_text,
       state:   "waiting for review",
@@ -100,7 +102,7 @@ class PostCollaborationTest < Minitest::Spec
       params: {review: {suggestions: "Line 1 sucks"}}))
     # TODO: validate suggestions, make collection
 
-    assert_position ctx, moment.before("catch-before-?Revise!"), moment.at("suspend-revise_form?"), moment.before("Start.default")
+    assert_position ctx, moment.suspend(after: "?Reject!"), moment.at("suspend-revise_form?"), moment.before("Start.default")
     assert_exposes ctx[:process_model],
       content: new_text,
       state:   "edit requested",
@@ -118,7 +120,7 @@ class PostCollaborationTest < Minitest::Spec
   # click "Revise form"
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:revise_form?", process_model: ctx[:process_model], params: {}))
 
-    assert_position ctx, moment.before("catch-before-?Revise!"), moment.before("revise_form_submitted?!", "revise_form_cancel?"), moment.before("Start.default")
+    assert_position ctx, moment.suspend(after: "?Reject!"), moment.before("revise_form_submitted?!", "revise_form_cancel?"), moment.before("Start.default")
     assert_exposes ctx[:process_model],
       content: new_text,
       state:   "edit requested",
@@ -129,7 +131,7 @@ class PostCollaborationTest < Minitest::Spec
   # click "Submit revise form"
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:revise_form_submitted?!", process_model: ctx[:process_model], params: {post: {content: "Even better!"}}))
 
-    assert_position ctx, moment.before("catch-before-?Revise!", "catch-before-?Notify approver!"), moment.before("revise_form?", "request_approval?!"), moment.before("Start.default")
+    assert_position ctx, moment.suspend(after: "?Revise!"), moment.before("revise_form?", "request_approval?!"), moment.before("Start.default")
     assert_exposes ctx[:process_model],
       content: "Even better!",
       state:   "revised, review requested", # FIXME: "revised, edit requested"
@@ -140,7 +142,7 @@ class PostCollaborationTest < Minitest::Spec
   # Submit to editor (request approval)
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:request_approval?!", process_model: ctx[:process_model], params: {post: {content: "Even better!"}}))
 
-    assert_position ctx, moment.before("catch-before-?Reject!", "catch-before-?Approve!"), moment.before("approved?", "change_requested?"), moment.before("review?")
+    assert_position ctx, moment.suspend(after: "?Notify approver!"), moment.before("approved?", "change_requested?"), moment.before("review?")
 
 ctx[:process_model].reload # FIXME: why?
     assert_exposes ctx[:process_model],
@@ -153,7 +155,7 @@ ctx[:process_model].reload # FIXME: why?
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("review:approve?", process_model: ctx[:process_model],
       params: {}))
 
-    assert_position ctx, moment.before("catch-before-?Publish!", "catch-before-?Delete!", "catch-before-?Update!"), moment.before("delete?", "publish?!"), moment.before("Start.default")
+    assert_position ctx, moment.suspend(after: "?Approve!"), moment.before("delete?", "publish?!"), moment.before("Start.default")
     assert_exposes ctx[:process_model],
       content: "Even better!",
       state:   "approved, ready to publish",
@@ -163,7 +165,7 @@ ctx[:process_model].reload # FIXME: why?
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:publish?!", process_model: ctx[:process_model],
       params: {}))
 
-    assert_position ctx, moment.before("catch-before-?Archive!"), moment.before("archive?!"), moment.before("Start.default")
+    assert_position ctx, moment.suspend(after: "?Publish!"), moment.before("archive?!"), moment.before("Start.default")
     assert_exposes ctx[:process_model],
       content: "Even better!",
       state:   "published",
