@@ -10,7 +10,7 @@ class PostCollaborationTest < Minitest::Spec
     domain_ctx = {params: params}
 
     ctx = {activity: activity, event_name: event_name, process_model: process_model, domain_ctx: domain_ctx,
-      success_before: "web:new?!" # DISCUSS: # we don't need success flag here
+      success: {after: "web:created?"} # FIXME: # we don't need success flag here. allow removing/avoiding the {success} steps
     } # TODO: require domain_ctx if scoping on.
   end
 

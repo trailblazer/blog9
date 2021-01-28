@@ -9,15 +9,16 @@ class PostsController < ApplicationController::Web
   endpoint "view",          find_process_model: true, domain_activity: Post::Operation::View # not everything has to be a workflow/part of the state machine.
   endpoint "web:edit_form?", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
   endpoint "web:edit_form_submitted?!", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
+  endpoint "web:request_approval?!", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
 
   def new_form # new_form
-    endpoint "web:new_form?", success_before: "web:new?!" do |ctx, contract:, **|
+    endpoint "web:new_form?", success: {after: "web:New form"} do |ctx, contract:, **|
       render html: cell(Post::Write::Cell::New, contract, form_url: create_post_path, header: "Create post")
     end
   end
 
   def create
-    endpoint "web:new?!", success_before: "web:request_approval?!" do |ctx, model:, **|
+    endpoint "web:new?!", success: {after: "web:created?"} do |ctx, model:, **|
       redirect_to view_post_path(id: model.id)
     end.Or do |ctx, contract:, **| # render erroring form
       render html: cell(Post::Write::Cell::New, contract, form_url: create_post_path, header: "Create post")
@@ -32,17 +33,24 @@ class PostsController < ApplicationController::Web
   end
 
   def edit # TODO: make one field static so the contract changes
-    endpoint "web:edit_form?", success_before: "web:edit_form_submitted?!" do |ctx, contract:, model:, **|
+    endpoint "web:edit_form?", success: {after: "web:Edit form"} do |ctx, contract:, model:, **|
       render html: cell(Post::Write::Cell::New, contract, form_url: update_post_path(id: model.id), header: "Edit post")
     end
   end
 
   def update
-    endpoint "web:edit_form_submitted?!", success_before: "web:request_approval?!" do |ctx, model:, **| # DOCUMENT: make sure we understand why request_approval?! is the next step if success.
+    endpoint "web:edit_form_submitted?!", success: {after: "web:updated?"} do |ctx, model:, **| # DOCUMENT: make sure we understand why request_approval?! is the next step if success.
       redirect_to view_post_path(id: model.id)
     end.Or do |ctx, contract:, model:, **| # render erroring form
       render html: cell(Post::Write::Cell::New, contract, form_url: update_post_path(id: model.id), header: "Edit post")
     end
+  end
+
+  def request_approval                                            # FIXME: how to configure that?
+    endpoint "web:request_approval?!", success: {after: "web:throw-after-request_approval?!"} do |ctx, model:, **|
+      redirect_to view_post_path(id: model.id) # TODO: flash message!
+    end
+    # DISCUSS: test {failure}, when in wrong state
   end
 
   private def endpoint(event_name, **options)

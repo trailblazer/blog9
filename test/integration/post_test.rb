@@ -55,8 +55,14 @@ class PostTest < ActionDispatch::SystemTestCase
     assert_selector ".post_content", text: "Are we live, yet?"
     assert_actions("Edit post", "Request approval from editor")
 
-  # request approval
+# request approval
     click_on "Request approval from editor"
+
+    # redirect to {view} with status displayed
+    assert_selector "h1", text: "View Post" # TODO: introduce headline
+    assert_selector ".post_content", text: "Are we live, yet?"
+    assert_selector ".post_state", text: "Post is under review"
+    assert_actions()
 
     puts page.body
     # assert_select "form:match('action', ?)", "/posts/new"
