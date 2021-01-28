@@ -1,0 +1,14 @@
+<h1>Review Post</h1>
+
+<%= cell(Post::Write::Cell::View::Show, model) %>
+
+<div class="actions">
+  <%= link_to "Approve!", approve_post_path(model) %>
+
+  <%= simple_form_for(review_form, url: reject_post_url, as: :post) do |f| %>
+    <div><%= f.error_notification %></div>
+    <div><%= f.input :suggestions, label: "Suggestions", as: :text, required: false %></div>
+    <div><%= f.button :submit, value: "Reject!" %></div>
+  <% end %>
+
+</div>

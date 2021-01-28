@@ -71,7 +71,15 @@ class PostTest < ActionDispatch::SystemTestCase
     assert_selector "body", text: "" # FIXME: use better endpoint handler
 ######### /SECURITY
 
+######### --------- TODO: actually different session --------- #########
+    visit "/posts/#{Post.last.id}/review"
+
+    assert_selector "h1", text: "Review Post" # TODO: introduce headline
+    assert_selector ".post_content", text: "Are we live, yet?"
+    assert_actions("Approve", "Request changes")
+
     puts page.body
+######### ---------/TODO: actually different session --------- #########
     # assert_select "form:match('action', ?)", "/posts/new"
     # "div:match('id', ?)", "id_string"
     # assert_response :success

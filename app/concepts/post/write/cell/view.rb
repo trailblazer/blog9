@@ -3,8 +3,6 @@ module Post::Write
     class View  < Trailblazer::Cell
       include SimpleForm::ActionViewExtensions::FormHelper
 
-      property :content
-
       def able?(action)
         dictionary = Workflow::Collaboration::WriteWeb.to_h[:dictionary]
         signal, (ctx, ) = Trailblazer::Workflow::Moment::Runtime.([{dictionary: dictionary, event_name: "web:#{action}", process_model: model}, {}])
@@ -12,9 +10,15 @@ module Post::Write
         signal.to_h[:semantic] == :success
       end
 
-      def state
-        if model.state == "waiting for review" # FIXME: how to encapsulate that?
-          "Post is under review"
+      class Show < Trailblazer::Cell
+        extend ViewName::Flat
+
+        property :content
+
+        def state
+          if model.state == "waiting for review" # FIXME: how to encapsulate that?
+            "Post is under review"
+          end
         end
       end
     end # New

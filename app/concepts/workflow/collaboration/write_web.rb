@@ -14,15 +14,14 @@ module Workflow
         # can I edit? means I can go to edit_form?
         ["web:edit_form?",            ->(process_model:) { ["created", "updated"].include?(process_model.state) }, at("gw-a"), before("edit_form?", "request_approval?!"), start()],
         ["web:edit_form_submitted?!",  ->(process_model:) { ["created", "updated"].include?(process_model.state)  }, at("gw-a"), before("edit_form_submitted?!", "edit_cancel?"), start()],
-        [
-          "web:request_approval?!",
+        ["web:request_approval?!",
           *StatePlacer(
-            "updated" => {after: "?Update!"},
-            "created" => {after: "?Create!"},
+            "updated"                   => {after: "?Update!"},
+            "created"                   => {after: "?Create!"},
             "revised, review requested" => {after: "?Revise!"}
           ),
-          before("request_approval?!", "edit_form?"), start()
-        ],
+          before("request_approval?!", "edit_form?"), start()],
+        ["review:review?",  ->(process_model:) { ["waiting for review"].include?(process_model.state)  }, before("catch-before-?Reject!", "catch-before-?Approve!"), before("approved?", "change_requested?"), before("review?")],
         ["review:suggest_changes?",  ->(process_model:) { ["waiting for review"].include?(process_model.state)  }, before("catch-before-?Reject!", "catch-before-?Approve!"), before("approved?", "change_requested?"), before("suggest_changes?", "approve?")],
         ["review:approve?",  ->(process_model:) { ["waiting for review"].include?(process_model.state)  }, before("catch-before-?Reject!", "catch-before-?Approve!"), before("approved?", "change_requested?"), before("suggest_changes?", "approve?")],
         ["web:revise_form?",         ->(process_model:) { process_model.state == "edit requested" }, before("catch-before-?Revise!"), before("revise_form?"), before("Start.default")],

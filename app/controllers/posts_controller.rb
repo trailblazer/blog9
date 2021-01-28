@@ -10,6 +10,7 @@ class PostsController < ApplicationController::Web
   endpoint "web:edit_form?", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
   endpoint "web:edit_form_submitted?!", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
   endpoint "web:request_approval?!", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
+  endpoint "review:review?", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
 
   def new_form # new_form
     endpoint "web:new_form?", success: {after: "web:New form"} do |ctx, contract:, **|
@@ -51,6 +52,12 @@ class PostsController < ApplicationController::Web
       redirect_to view_post_path(id: model.id) # TODO: flash message!
     end
     # DISCUSS: test {failure}, when in wrong state
+  end
+
+  def review # TODO: rename review to editor
+    endpoint "review:review?", success: {after: "review:Review form"} do |ctx, process_model:, contract:, **|
+      render html: cell(Post::Write::Cell::Review, process_model, review_form: contract)
+    end
   end
 
   private def endpoint(event_name, **options)
