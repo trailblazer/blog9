@@ -92,7 +92,7 @@ class PostCollaborationTest < Minitest::Spec
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:request_approval?!", process_model: ctx[:process_model], params: {}))
 
     assert_position ctx, moment.suspend(after: "?Notify approver!"), moment.before("approved?", "change_requested?"), moment.before("review?")
-    assert_exposes ctx[:process_model],
+    assert_exposes ctx[:process_model].reload,
       content: new_text,
       state:   "waiting for review",
       reviews: Review.where(post_id: ctx[:process_model].id)
