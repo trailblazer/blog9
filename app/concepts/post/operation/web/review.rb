@@ -5,7 +5,6 @@ module Post::Operation::Web
       # validates :suggestions, presence: true
     end
 
-    step Model(::Review, :new)
     step Contract::Build(constant: Form)
   end # Review
 end

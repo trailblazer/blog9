@@ -7,9 +7,10 @@ Rails.application.routes.draw do
   get "/posts/edit/:id"   => "posts#edit", as: :edit_post
   patch "/posts/:id/update"    => "posts#update", as: :update_post
   get "/posts/:id/request_approval" => "posts#request_approval", as: :request_approval
-  get "/posts/:id/review" => "posts#review", as: :review
-  get "/posts/:id/review/approve" => "posts#approve", as: :approve_post
-  get "/posts/:id/review/reject" => "posts#reject", as: :reject_post
+
+  get "/reviews/:id"          => "posts#review", as: :review
+  get "/reviews/:id/approve"  => "posts#approve", as: :approve_review
+  get "/reviews/:id/reject"   => "posts#reject", as: :reject_review
 
 
   get "/my" => "posts#dashboard"

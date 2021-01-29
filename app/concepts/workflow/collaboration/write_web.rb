@@ -21,7 +21,7 @@ module Workflow
             "revised, review requested" => {after: "?Revise!"}
           ),
           before("request_approval?!", "edit_form?"), start()],
-        ["review:review?",  ->(process_model:) { ["waiting for review"].include?(process_model.state)  }, before("catch-before-?Reject!", "catch-before-?Approve!"), before("approved?", "change_requested?"), before("review?")],
+        ["review:review?",  ->(process_model:) { ["waiting for review"].include?(process_model.post.state)  }, before("catch-before-?Reject!", "catch-before-?Approve!"), before("approved?", "change_requested?"), before("review?")],
         ["review:suggest_changes?",  ->(process_model:) { ["waiting for review"].include?(process_model.state)  }, before("catch-before-?Reject!", "catch-before-?Approve!"), before("approved?", "change_requested?"), before("suggest_changes?", "approve?")],
         ["review:approve?",  ->(process_model:) { ["waiting for review"].include?(process_model.state)  }, before("catch-before-?Reject!", "catch-before-?Approve!"), before("approved?", "change_requested?"), before("suggest_changes?", "approve?")],
         ["web:revise_form?",         ->(process_model:) { process_model.state == "edit requested" }, before("catch-before-?Revise!"), before("revise_form?"), before("Start.default")],

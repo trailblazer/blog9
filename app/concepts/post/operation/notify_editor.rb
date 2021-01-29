@@ -6,7 +6,7 @@ module Post::Operation
 
     def start_review(ctx, model:, **)
       ctx[:review] = Review.create(post_id: model.id
-        #, state: "waiting for editor"
+        # , state: "waiting for editor"
         )
     end
 

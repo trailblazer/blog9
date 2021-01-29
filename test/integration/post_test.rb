@@ -72,13 +72,15 @@ class PostTest < ActionDispatch::SystemTestCase
 ######### /SECURITY
 
 ######### --------- TODO: actually different session --------- #########
-    visit "/posts/#{Post.last.id}/review"
+    visit "/reviews/#{Post.last.reviews.last.id}" # {process_model} is Review now
 
     assert_selector "h1", text: "Review Post" # TODO: introduce headline
     assert_selector ".post_content", text: "Are we live, yet?"
-    assert_actions("Approve", "Request changes")
-
+    # assert_actions("Approve", "Request changes")
+    assert_actions("Approve!")
+    # assert_selector "input", value: "Reject!"
     puts page.body
+
 ######### ---------/TODO: actually different session --------- #########
     # assert_select "form:match('action', ?)", "/posts/new"
     # "div:match('id', ?)", "id_string"
