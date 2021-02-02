@@ -10,7 +10,7 @@ Rails.application.routes.draw do
 
   get "/reviews/:id"          => "posts#review", as: :review
   get "/reviews/:id/approve"  => "posts#approve", as: :approve_review
-  get "/reviews/:id/reject"   => "posts#reject", as: :reject_review
+  post "/reviews/:id/reject"   => "posts#reject", as: :reject_review
 
 
   get "/my" => "posts#dashboard"

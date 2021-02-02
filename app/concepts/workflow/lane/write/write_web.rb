@@ -1,7 +1,7 @@
 module Workflow
   module Lane
     module Write
-      WriteWeb = Trailblazer::Workflow::Collaboration.Lane(json: "app/concepts/workflow/blog.post-9.4.json", lane: "post.writer.ui.web", start_id: "new_form?") do
+      WriteWeb = Trailblazer::Workflow::Collaboration.Lane(json: "app/concepts/workflow/blog.post-9.5.json", lane: "post.writer.ui.web", start_id: "new_form?") do
         {
           "New form" => Subprocess(Post::Operation::Web::New),
           "Edit form" => Subprocess(Post::Operation::Web::Edit),

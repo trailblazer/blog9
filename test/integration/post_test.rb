@@ -64,22 +64,35 @@ class PostTest < ActionDispatch::SystemTestCase
     assert_selector ".post_state", text: "Post is under review"
     assert_actions() # we can't do anything but wait currently.
 
+    post_id = page.current_url.split("/").last
+    puts "redirect to #{page.current_url}"
+    # puts Review.find(review_id).post.inspect
+    puts review = Post.find(post_id).reviews.last
+
 ######### SECURITY
-    visit "/posts/edit/#{Post.last.id}"
+    visit "/posts/edit/#{post_id}"
     assert_selector "body", text: "" # FIXME: use better endpoint handler
-    visit "/posts/#{Post.last.id}/request_approval"
+    visit "/posts/#{post_id}/request_approval"
     assert_selector "body", text: "" # FIXME: use better endpoint handler
 ######### /SECURITY
 
 ######### --------- TODO: actually different session --------- #########
-    visit "/reviews/#{Post.last.reviews.last.id}" # {process_model} is Review now
+    visit "/reviews/#{review.id}" # {process_model} is Review now
+
+    puts page.body
 
     assert_selector "h1", text: "Review Post" # TODO: introduce headline
     assert_selector ".post_content", text: "Are we live, yet?"
     # assert_actions("Approve", "Request changes")
     assert_actions("Approve!")
     # assert_selector "input", value: "Reject!"
+
+  # Reject: invalid suggestions
+    click_on "Reject!"
+
+    # form shows errors
     puts page.body
+    assert_selector "div.input.review_suggestions.field_with_errors" # field with errors # TODO: test error message?
 
 ######### ---------/TODO: actually different session --------- #########
     # assert_select "form:match('action', ?)", "/posts/new"

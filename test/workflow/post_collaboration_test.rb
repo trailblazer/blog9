@@ -95,10 +95,13 @@ class PostCollaborationTest < Minitest::Spec
     assert_exposes ctx[:process_model].reload,
       content: new_text,
       state:   "waiting for review",
-      reviews: Review.where(post_id: ctx[:process_model].id)
+      reviews: ->(asserted:, **) { asserted.reviews.size == 1 }
 
   # reject/suggest changes
-    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("review:suggest_changes?", process_model: ctx[:process_model],
+    review = ctx[:process_model].reviews[0]
+
+    # process_model is Review
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("review:suggest_changes?", process_model: review,
       params: {review: {suggestions: "Line 1 sucks"}}))
     # TODO: validate suggestions, make collection
 
@@ -106,11 +109,13 @@ class PostCollaborationTest < Minitest::Spec
     assert_exposes ctx[:process_model],
       content: new_text,
       state:   "edit requested",
-      reviews: Review.where(post_id: ctx[:process_model].id)
+      reviews: ->(asserted:, **) { asserted.reviews.size == 1 }
 
     assert_exposes ctx[:domain_ctx][:review], # DISCUSS: make this easily exposable?
       suggestions: "Line 1 sucks"#,
       # state: "waiting for edit"
+
+      assert ctx[:domain_ctx][:model].is_a?(::Post)
 
 # wrong: submit web:request_approval?
 # wrong: submit web:edit_form?
@@ -152,14 +157,16 @@ ctx[:process_model].reload # FIXME: why?
       id: ->(asserted:, **) { asserted.reviews.size == 2 }
 
   # Approve
-    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("review:approve?", process_model: ctx[:process_model],
+    review = ctx[:process_model].reviews.last
+
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("review:approve?", process_model: review,
       params: {}))
 
     assert_position ctx, moment.suspend(after: "?Approve!"), moment.before("delete?", "publish?!"), moment.before("Start.default")
     assert_exposes ctx[:process_model],
       content: "Even better!",
       state:   "approved, ready to publish",
-      reviews: Review.where(post_id: ctx[:process_model].id)
+      reviews: ->(asserted:, **) { asserted.reviews.size == 2 }
 
   # Publish
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:publish?!", process_model: ctx[:process_model],

@@ -1,5 +1,5 @@
 module Post::Operation
-  class Approve < Trailblazer::Operation
+  class Approve < Trailblazer::Operation # @requires {:model}, {:review}
     step :state
 
     def state(ctx, model:, **)

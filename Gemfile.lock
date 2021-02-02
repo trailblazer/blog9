@@ -6,12 +6,6 @@ PATH
       trailblazer-activity-dsl-linear
 
 PATH
-  remote: ../trailblazer-context
-  specs:
-    trailblazer-context (0.3.1)
-      hashie (~> 4.1)
-
-PATH
   remote: ../trailblazer-generator
   specs:
     trailblazer-generator (0.3.0.pre)
@@ -103,6 +97,17 @@ GEM
       rack-test (>= 0.6.3)
       regexp_parser (~> 1.5)
       xpath (~> 3.2)
+    cells (4.1.7)
+      declarative-builder (< 0.2.0)
+      declarative-option (< 0.2.0)
+      tilt (>= 1.4, < 3)
+      uber (< 0.2.0)
+    cells-erb (0.1.0)
+      cells (~> 4.0)
+      erbse (>= 0.1.1)
+    cells-rails (0.1.3)
+      actionpack (>= 5.0)
+      cells (>= 4.1.6, < 5.0.0)
     childprocess (3.0.0)
     concurrent-ruby (1.1.7)
     crass (1.0.6)
@@ -153,6 +158,8 @@ GEM
       dry-initializer (~> 3.0)
       dry-schema (~> 1.5, >= 1.5.2)
     equatable (0.6.1)
+    erbse (0.1.4)
+      temple
     erubi (1.10.0)
     faraday (1.3.0)
       faraday-net_http (~> 1.0)
@@ -262,6 +269,9 @@ GEM
     selenium-webdriver (3.142.7)
       childprocess (>= 0.5, < 4.0)
       rubyzip (>= 1.2.2)
+    simple_form (5.0.3)
+      actionpack (>= 5.0)
+      activemodel (>= 5.0)
     spring (2.1.1)
     spring-watcher-listen (2.0.1)
       listen (>= 2.7, < 4.0)
@@ -274,6 +284,7 @@ GEM
       activesupport (>= 4.0)
       sprockets (>= 3.0.0)
     sqlite3 (1.4.2)
+    temple (0.8.2)
     thor (1.0.1)
     thread_safe (0.3.6)
     tilt (2.0.10)
@@ -286,7 +297,11 @@ GEM
       trailblazer-context (>= 0.3.1, < 0.4.0)
     trailblazer-activity-dsl-linear (0.3.4)
       trailblazer-activity (>= 0.11.3, < 1.0.0)
-    trailblazer-developer (0.0.17)
+    trailblazer-cells (0.0.3)
+      cells (>= 4.1.0.rc1, < 5.0.0)
+    trailblazer-context (0.3.1)
+      hashie (~> 4.1)
+    trailblazer-developer (0.0.20)
       hirb
       representable
       trailblazer-activity (>= 0.11.0, < 1.0.0)
@@ -351,6 +366,8 @@ PLATFORMS
 DEPENDENCIES
   bootsnap (>= 1.4.2)
   capybara (>= 2.15)
+  cells-erb
+  cells-rails
   faraday
   listen (~> 3.2)
   minitest
@@ -360,13 +377,14 @@ DEPENDENCIES
   reform-rails
   sass-rails (>= 6)
   selenium-webdriver
+  simple_form
   spring
   spring-watcher-listen (~> 2.0.0)
   sqlite3 (~> 1.4)
   trailblazer (>= 2.1.0)
   trailblazer-activity-implementation!
-  trailblazer-context!
-  trailblazer-developer (= 0.0.17)
+  trailblazer-cells
+  trailblazer-developer (= 0.0.20)
   trailblazer-endpoint (= 0.0.8)
   trailblazer-generator!
   trailblazer-test

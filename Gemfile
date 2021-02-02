@@ -22,13 +22,17 @@ gem 'bootsnap', '>= 1.4.2', require: false
 
 gem "trailblazer", ">= 2.1.0"
 # gem "trailblazer-developer", path: "../trailblazer-developer"
-gem "trailblazer-developer", "0.0.17"
+gem "trailblazer-developer", "0.0.20"
 gem "trailblazer-workflow", path: "../trailblazer-workflow"
 gem "trailblazer-activity-implementation", path: "../trailblazer-activity-implementation"
 # gem "trailblazer-endpoint", path: "../trailblazer-endpoint"
 gem "trailblazer-endpoint", "0.0.8"
-gem "trailblazer-context", path: "../trailblazer-context"
+# gem "trailblazer-context", path: "../trailblazer-context"
 gem "reform-rails"
+gem "trailblazer-cells"
+gem "cells-erb"
+gem "cells-rails"
+gem "simple_form"
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

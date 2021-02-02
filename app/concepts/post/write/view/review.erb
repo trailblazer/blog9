@@ -5,7 +5,7 @@
 <div class="actions">
   <%= link_to "Approve!", approve_review_path(id: model.id) %>
 
-  <%= simple_form_for(review_form, url: reject_review_url(id: model.id), as: :review) do |f| %>
+  <%= simple_form_for(review_form, url: reject_review_url(id: model.id), as: :review, method: :post) do |f| %>
     <div><%= f.error_notification %></div>
     <div><%= f.input :suggestions, label: "Suggestions", as: :text, required: false %></div>
     <div><%= f.button :submit, value: "Reject!" %></div>

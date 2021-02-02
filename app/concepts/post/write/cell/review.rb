@@ -4,7 +4,7 @@ module Post::Write
       include SimpleForm::ActionViewExtensions::FormHelper
 
       def post
-        model.post
+        model
       end
 
       def review_form
