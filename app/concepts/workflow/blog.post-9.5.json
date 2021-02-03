@@ -1104,6 +1104,24 @@
       "parent": "post.editor.review.ui.web"
     },
     {
+      "id": "approve!",
+      "type": "IntermediateEventThrowMessage",
+      "linksTo": [
+        {
+          "target": "GatewayNone-kirdpn59"
+        },
+        {
+          "target": "approved?",
+          "message": true,
+          "target_lane": "post.editor.review.ui.web"
+        }
+      ],
+      "data": {
+      },
+      "label": "approve!",
+      "parent": "post.lib"
+    },
+    {
       "id": "throw-after-edit_form_submitted?!",
       "type": "IntermediateEventThrowMessage",
       "linksTo": [
@@ -1280,7 +1298,8 @@
       "type": "IntermediateEventThrowMessage",
       "linksTo": [
         {
-          "target": "GatewayNone-kirdpn59"
+          "target": "approve!",
+          "label": "success"
         },
         {
           "target": "approved?",

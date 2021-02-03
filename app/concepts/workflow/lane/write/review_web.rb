@@ -18,8 +18,12 @@ module Workflow
       graph = Trailblazer::Activity::Introspect::Graph(ReviewWeb)
       suggest_changes = graph.find("suggest_changes!").task
       rejected = graph.find("rejected?").task
+      approve = graph.find("approve!").task
+      approved = graph.find("approved?").task
 
+      # outgoing message
       suggest_changes_ext = Trailblazer::Activity::DSL::Linear.VariableMapping(output: {:post => :model, :model => :review, :contract => :contract})
+      # incoming message
       rejected_ext        = Trailblazer::Activity::DSL::Linear.VariableMapping(input: {:model => :post, :review => :model}, output: ->(inner, original) { {model: inner[:model], post: inner[:post]} })
 
       bla = suggest_changes_ext.(config: ReviewWeb.to_h[:config], task: Struct.new(:circuit_task).new(suggest_changes))
@@ -27,6 +31,10 @@ module Workflow
       bla = rejected_ext.(config: ReviewWeb.to_h[:config], task: Struct.new(:circuit_task).new(rejected))
       ReviewWeb[:wrap_static][rejected] = bla[:wrap_static][rejected]
 
+      bla = suggest_changes_ext.(config: ReviewWeb.to_h[:config], task: Struct.new(:circuit_task).new(approve))
+      ReviewWeb[:wrap_static][approve] = bla[:wrap_static][approve]
+      bla = rejected_ext.(config: ReviewWeb.to_h[:config], task: Struct.new(:circuit_task).new(approved))
+      ReviewWeb[:wrap_static][approved] = bla[:wrap_static][approved]
 
 
       # raise ReviewWeb[:wrap_static][suggest_changes].inspect

@@ -141,7 +141,8 @@ class PostCollaborationTest < Minitest::Spec
   # click "Revise form"
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:revise_form?", process_model: post, params: {}))
 
-    assert_position ctx, moment.suspend(after: "?Reject!"), moment.before("revise_form_submitted?!", "revise_form_cancel?"), moment.before("Start.default")
+    assert_position ctx, moment.suspend(after: "reject!", last_node_id: "reject!"), moment.before("revise_form_submitted?!", "revise_form_cancel?"), moment.before("Start.default")
+    assert ctx[:domain_ctx][:model].is_a?(Post)
     assert_exposes ctx[:process_model],
       content: new_text,
       state:   "edit requested",
@@ -165,27 +166,31 @@ class PostCollaborationTest < Minitest::Spec
 
     assert_position ctx, moment.suspend(after: "?Notify approver!"), moment.before("approved?", "change_requested?"), moment.before("review?")
 
-ctx[:process_model].reload # FIXME: why?
-    assert_exposes ctx[:process_model],
+    assert_exposes ctx[:process_model].reload, # FIXME: why?
       content: "Even better!",
       state:   "waiting for review",
       reviews: Review.where(post_id: ctx[:process_model].id),
       id: ->(asserted:, **) { asserted.reviews.size == 2 }
 
+    assert ctx[:domain_ctx][:review].is_a?(Review)
+
   # Approve
-    review = ctx[:process_model].reviews.last
+    review = ctx[:domain_ctx][:review]
 
-    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("review:approve?", process_model: review,
-      params: {}))
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("review:approve?", process_model: review, params: {}))
 
-    assert_position ctx, moment.suspend(after: "?Approve!"), moment.before("delete?", "publish?!"), moment.before("Start.default")
-    assert_exposes ctx[:process_model],
+    assert_position ctx, moment.suspend(after: "approve!", last_node_id: "approve!"), moment.before("delete?", "publish?!"), moment.before("Start.default")
+    assert ctx[:domain_ctx][:model].is_a?(Review)
+    assert_exposes ctx[:domain_ctx][:model], # DISCUSS: make this easily exposable?
+      suggestions: nil
+
+    assert_exposes ctx[:domain_ctx][:post],
       content: "Even better!",
       state:   "approved, ready to publish",
       reviews: ->(asserted:, **) { asserted.reviews.size == 2 }
 
   # Publish
-    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:publish?!", process_model: ctx[:process_model],
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:publish?!", process_model: ctx[:domain_ctx][:post],
       params: {}))
 
     assert_position ctx, moment.suspend(after: "?Publish!"), moment.before("archive?!"), moment.before("Start.default")

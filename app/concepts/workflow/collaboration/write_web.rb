@@ -1,7 +1,7 @@
 module Workflow
   module Collaboration
     # The entire process of writing, editing, revising and publishing a blog post.
-    WriteWeb = Trailblazer::Workflow.Collaboration(
+    WriteWeb = Trailblazer::Workflow.Collaboration( # Post::Authoring
       lanes: {
         lib: Workflow::Lane::PostLib,
         web:  Workflow::Lane::Write::WriteWeb,
@@ -23,9 +23,9 @@ module Workflow
           before("request_approval?!", "edit_form?"), start()],
 
         # Note that the PM is a {Review} instance here.
-        ["review:review?",  ->(process_model:) {puts "@@@@@++-- #{process_model.post.inspect}"; ["waiting for review"].include?(process_model.post.state)  }, before("catch-before-?Reject!", "catch-before-?Approve!"), before("approved?", "change_requested?"), before("review?")],
-        ["review:suggest_changes?",  ->(process_model:) { puts "@@@@@++ #{process_model.post.inspect}"; ["waiting for review"].include?(process_model.post.state)  }, before("catch-before-?Reject!", "catch-before-?Approve!"), before("approved?", "change_requested?"), before("suggest_changes?", "approve?")],
-        ["review:approve?",  ->(process_model:) { ["waiting for review"].include?(process_model.post.state)  }, before("catch-before-?Reject!", "catch-before-?Approve!"), before("approved?", "change_requested?"), before("suggest_changes?", "approve?")],
+        ["review:review?",  ->(process_model:) { ["waiting for review"].include?(process_model.post.state)  }, before("catch-before-?Reject!", "catch-before-?Approve!"), before("approved?", "change_requested?"), before("review?")],
+        ["review:suggest_changes?",  ->(process_model:) { ["waiting for review"].include?(process_model.post.state)  }, before("catch-before-?Reject!", "catch-before-?Approve!"), before("approved?", "change_requested?"), before("suggest_changes?", "approve?")],
+        ["review:approve?",  ->(process_model:) { ["waiting for review", "revised, review requested"].include?(process_model.post.state)  }, before("catch-before-?Reject!", "catch-before-?Approve!"), before("approved?", "change_requested?"), before("suggest_changes?", "approve?")],
 
         ["web:revise_form?",         ->(process_model:) { process_model.state == "edit requested" }, before("catch-before-?Revise!"), before("revise_form?"), before("Start.default")],
         ["web:revise_form_submitted?!",         ->(process_model:) { process_model.state == "edit requested" }, before("catch-before-?Revise!"), before("revise_form_submitted?!", "revise_form_cancel?"), before("Start.default")],
