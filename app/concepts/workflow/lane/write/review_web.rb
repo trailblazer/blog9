@@ -22,7 +22,9 @@ module Workflow
       approved = graph.find("approved?").task
 
       # outgoing message
-      suggest_changes_ext = Trailblazer::Activity::DSL::Linear.VariableMapping(output: {:post => :model, :model => :review, :contract => :contract})
+      # suggest_changes_ext = Trailblazer::Activity::DSL::Linear.VariableMapping(output: {:post => :model, :model => :review, :contract => :contract})
+      # DISCUSS: we set {ctx[:model] => review.post} here
+      suggest_changes_ext = Trailblazer::Activity::DSL::Linear.VariableMapping(output: ->(inner, original) { {:model => inner[:model].post, :review => inner[:model], :contract => inner[:contract]} } )
       # incoming message
       rejected_ext        = Trailblazer::Activity::DSL::Linear.VariableMapping(input: {:model => :post, :review => :model}, output: ->(inner, original) { {model: inner[:model], post: inner[:post]} })
 

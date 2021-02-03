@@ -10,13 +10,8 @@ module Post::Operation
 
     # DISCUSS: basic validation?
 
-    step :associate_review
     step :post_state
     step :persist
-
-    def associate_review(ctx, model:, review:, **)
-      review.post_id = model.id
-    end
 
     def post_state(ctx, model:, **)
       model.state = "edit requested"

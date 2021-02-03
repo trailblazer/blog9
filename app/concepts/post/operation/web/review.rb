@@ -6,10 +6,5 @@ module Post::Operation::Web
     end
 
     step Contract::Build(constant: Form)
-    step :post
-
-    def post(ctx, model:, **)
-      ctx[:post] = model.post # DISCUSS: where are we doing this?
-    end
   end # Review
 end
