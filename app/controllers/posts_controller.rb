@@ -58,7 +58,6 @@ class PostsController < ApplicationController::Web
   # {model} is a Review here.
   def review # TODO: rename review to editor
     endpoint "review:review?", success: {after: "review:Review form"}, process_model_class: Review do |ctx, model:, contract:, **|
-      puts "@@@@@ controller #{model.inspect}"
       render html: cell(Post::Write::Cell::Review, model, review_form: contract)
     end
   end

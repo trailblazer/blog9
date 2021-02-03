@@ -58,6 +58,7 @@ class PostCollaborationTest < Minitest::Spec
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:new?!", params: {post: {content: text = "That was great!"}}))
 
   process_model = ctx[:process_model]
+  post          = process_model
 
     assert_position ctx, moment.suspend(after: "?Create!"), moment.before("edit_form?", "request_approval?!"), moment.start()
     assert_exposes ctx[:process_model],
@@ -97,25 +98,40 @@ class PostCollaborationTest < Minitest::Spec
       state:   "waiting for review",
       reviews: ->(asserted:, **) { asserted.reviews.size == 1 }
 
-  # reject/suggest changes
+# --------- Review form
     review = ctx[:process_model].reviews[0]
+
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("review:review?", process_model: review, params: {}))
+
+    assert_position ctx, moment.suspend(after: "?Notify approver!"), moment.before("approved?", "change_requested?"), moment.suspend(after: "Review form", last_node_id: "Review form")
+    # {process_model} is a {Review}
+    assert ctx[:domain_ctx][:model].is_a?(Review)
+    assert_exposes ctx[:process_model],
+      post_id: post.id,
+      persisted?: true,
+      suggestions: nil
+
+  # reject/suggest changes
 
     # process_model is Review
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("review:suggest_changes?", process_model: review,
       params: {review: {suggestions: "Line 1 sucks"}}))
     # TODO: validate suggestions, make collection
 
-    assert_position ctx, moment.suspend(after: "?Reject!"), moment.at("suspend-revise_form?"), moment.before("Start.default")
-    assert_exposes ctx[:process_model],
+    # assert_position ctx, moment.suspend(after: "?Reject!"), moment.at("suspend-revise_form?"), moment.before("Start.default")
+    assert_position ctx, moment.suspend(after: "reject!", last_node_id: "reject!"), moment.at("suspend-revise_form?"), moment.before("Start.default")
+    assert ctx[:domain_ctx][:model].is_a?(Review)
+    assert ctx[:process_model].is_a?(Review) # DISCUSS: because we do {    |-- copy_[:process_model]_from_domain_ctx[:model]}
+    assert ctx[:domain_ctx][:post].is_a?(Post)
+    assert_exposes ctx[:domain_ctx][:post],
       content: new_text,
       state:   "edit requested",
       reviews: ->(asserted:, **) { asserted.reviews.size == 1 }
 
-    assert_exposes ctx[:domain_ctx][:review], # DISCUSS: make this easily exposable?
+    assert_exposes ctx[:domain_ctx][:model], # DISCUSS: make this easily exposable?
       suggestions: "Line 1 sucks"#,
       # state: "waiting for edit"
 
-      assert ctx[:domain_ctx][:model].is_a?(::Post)
 
 # wrong: submit web:request_approval?
 # wrong: submit web:edit_form?
@@ -123,7 +139,7 @@ class PostCollaborationTest < Minitest::Spec
 
 # --------- REVISE
   # click "Revise form"
-    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:revise_form?", process_model: ctx[:process_model], params: {}))
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:revise_form?", process_model: post, params: {}))
 
     assert_position ctx, moment.suspend(after: "?Reject!"), moment.before("revise_form_submitted?!", "revise_form_cancel?"), moment.before("Start.default")
     assert_exposes ctx[:process_model],

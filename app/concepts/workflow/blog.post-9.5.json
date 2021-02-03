@@ -1080,9 +1080,9 @@
           "target": "GatewayNone-kj9pcfbe"
         },
         {
-          "target": "change_requested?",
+          "target": "rejected?",
           "message": true,
-          "target_lane": "post.writer.ui.web"
+          "target_lane": "post.editor.review.ui.web"
         }
       ],
       "data": {
@@ -1424,9 +1424,9 @@
           "label": "success"
         },
         {
-          "target": "rejected?",
+          "target": "change_requested?",
           "message": true,
-          "target_lane": "post.editor.review.ui.web"
+          "target_lane": "post.writer.ui.web"
         }
       ],
       "data": {
