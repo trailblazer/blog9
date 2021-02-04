@@ -122,7 +122,22 @@ class PostTest < ActionDispatch::SystemTestCase
 
   # TODO: send invalid revise form
   # Revise form, add some more rock
+    fill_in :post_content, with: text = "Slayer! What else?"
+    click_on "Submit!"
 
+  # # Automatically redirected to "View Post"
+    assert_selector "h1", text: "View Post" # TODO: introduce headline
+    assert_selector ".post_content", text: text
+    assert_actions("Request approval from editor")
+
+# request approval
+    click_on "Request approval from editor"
+
+    # redirect to {view} with status displayed
+    assert_selector "h1", text: "View Post" # TODO: introduce headline
+    assert_selector ".post_content", text: text
+    assert_selector ".post_state", text: "Post is under review"
+    assert_actions() # we can't do anything but wait currently.
 
 puts page.body
     # assert_select "form:match('action', ?)", "/posts/new"

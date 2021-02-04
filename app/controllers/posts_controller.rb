@@ -13,6 +13,7 @@ class PostsController < ApplicationController::Web
   endpoint "review:review?", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
   endpoint "review:suggest_changes?", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
   endpoint "web:revise_form?", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
+  endpoint "web:revise_form_submitted?!", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
 
   def new_form # new_form
     endpoint "web:new_form?", success: {after: "web:New form"} do |ctx, contract:, **|
@@ -73,6 +74,14 @@ class PostsController < ApplicationController::Web
 
   def revise_form
     endpoint "web:revise_form?", success: {after: "web:Revise form"} do |ctx, contract:, model:, review:, **|
+      render html: cell(Post::Write::Cell::Revise, contract, form_url: revise_post_path(id: model.id), header: "Revise Post", review: review)
+    end
+  end
+
+  def revise
+    endpoint "web:revise_form_submitted?!", success: {after: "web:revise_updated?"} do |ctx, model:, **|
+      redirect_to view_post_path(id: model.id)
+    end.Or do |ctx, contract:, model:, **| # render erroring form
       render html: cell(Post::Write::Cell::Revise, contract, form_url: revise_post_path(id: model.id), header: "Revise Post", review: review)
     end
   end
