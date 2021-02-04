@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   get "/posts/edit/:id"   => "posts#edit", as: :edit_post
   patch "/posts/:id/update"    => "posts#update", as: :update_post
   get "/posts/:id/request_approval" => "posts#request_approval", as: :request_approval
+  get "/posts/:id/publish" => "posts#publish", as: :publish_post
 
   get "/reviews/:id"          => "posts#review", as: :review
   get "/reviews/:id/approve"  => "posts#approve", as: :approve_review
@@ -15,5 +16,6 @@ Rails.application.routes.draw do
   get "/post/:id/revise" => "posts#revise_form", as: :revise_form
   patch "/posts/:id/revise"    => "posts#revise", as: :revise_post
 
+  get "/posts/:filename" => "posts#view_from_slug", as: :post_slug
   get "/my" => "posts#dashboard"
 end

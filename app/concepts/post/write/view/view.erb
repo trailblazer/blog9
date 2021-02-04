@@ -1,9 +1,14 @@
 <h1>View Post</h1>
 
+<% if model.slug %>
+  <%= link_to "Permalink", model.slug, class: :permalink %>
+<% end %>
+
 <%= cell(Post::Write::Cell::View::Show, model) %>
 
 <div class="actions">
   <%= link_to "Edit post", edit_post_path(model) if able?("edit_form?") %>
   <%= link_to "Request approval from editor", request_approval_path(id: model.id) if able?("request_approval?!") %>
   <%= link_to "Revise post", revise_form_path(id: model.id) if able?("revise_form?") %>
+  <%= link_to "Publish post", publish_post_path(id: model.id) if able?("publish?!") %>
 </div>

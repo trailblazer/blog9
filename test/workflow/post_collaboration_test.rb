@@ -6,11 +6,11 @@ class PostCollaborationTest < Minitest::Spec
   let(:moment) { Trailblazer::Workflow::Moment::DSL }
 
   # TODO: abstract to endpoint/test
-  def ctx_for(event_name, params: {}, process_model: nil, activity: Workflow::Collaboration::WriteWeb)
-    domain_ctx = {params: params}
+  def ctx_for(event_name, params: {}, process_model: nil, activity: Workflow::Collaboration::WriteWeb, options_for_domain_ctx:nil)
+    domain_ctx = options_for_domain_ctx || {params: params}
 
     ctx = {activity: activity, event_name: event_name, process_model: process_model, domain_ctx: domain_ctx,
-      success: {after: "web:created?"} # FIXME: # we don't need success flag here. allow removing/avoiding the {success} steps
+      success: {after: "web:created?"}, # FIXME: # we don't need success flag here. allow removing/avoiding the {success} steps
     } # TODO: require domain_ctx if scoping on.
   end
 
@@ -187,16 +187,21 @@ class PostCollaborationTest < Minitest::Spec
     assert_exposes ctx[:domain_ctx][:post],
       content: "Even better!",
       state:   "approved, ready to publish",
+      slug:    nil,
       reviews: ->(asserted:, **) { asserted.reviews.size == 2 }
 
   # Publish
     signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:publish?!", process_model: ctx[:domain_ctx][:post],
-      params: {}))
+      options_for_domain_ctx: {
+        controller: Rails.application.routes.url_helpers, # for {#slug_for}
+      }
+    ))
 
     assert_position ctx, moment.suspend(after: "?Publish!"), moment.before("archive?!"), moment.before("Start.default")
     assert_exposes ctx[:process_model],
       content: "Even better!",
       state:   "published",
+      slug:    "/posts/even-better-",
       reviews: Review.where(post_id: ctx[:process_model].id)
 
   # Archive
@@ -207,6 +212,7 @@ class PostCollaborationTest < Minitest::Spec
     assert_exposes ctx[:process_model],
       content: "Even better!",
       state:   "archived",
+      slug:    "/posts/even-better-",
       reviews: Review.where(post_id: ctx[:process_model].id)
 
   # TODO: delete

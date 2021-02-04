@@ -154,9 +154,23 @@ review = Post.find(post_id).reviews.last # FIXME
     # Approval sent
     assert_selector "h1", text: "Review submitted"
     assert_selector ".post_state", text: "Approved, ready to publish"
-puts page.body
+# puts page.body
 ######### ---------/TODO: actually different session --------- #########
 
+  #
+  visit "/posts/view/#{post_id}"
+
+    assert_selector "h1", text: "View Post" # TODO: introduce headline
+    assert_selector ".post_content", text: text
+    assert_selector ".post_state", text: "Approved, ready to publish"
+    assert_actions("Publish post")
+  # Publish!
+
+    click_on "Publish post"
+puts page.body
+    assert_selector "h1", text: "View Post"
+    assert_selector ".post_state", text: "Published"
+    assert_selector "a.permalink[href='/posts/slayer--what-else-']"
 
     # assert_select "form:match('action', ?)", "/posts/new"
     # "div:match('id', ?)", "id_string"
