@@ -139,7 +139,25 @@ class PostTest < ActionDispatch::SystemTestCase
     assert_selector ".post_state", text: "Post is under review"
     assert_actions() # we can't do anything but wait currently.
 
+######### --------- TODO: actually different session --------- #########
+review = Post.find(post_id).reviews.last # FIXME
+
+    visit "/reviews/#{review.id}" # {process_model} is Review now
+
+    assert_selector "h1", text: "Review Post" # TODO: introduce headline
+    assert_selector ".post_content", text: text
+    assert_actions("Approve!")
+
+  # Approve post!
+    click_on "Approve!"
+
+    # Approval sent
+    assert_selector "h1", text: "Review submitted"
+    assert_selector ".post_state", text: "Approved, ready to publish"
 puts page.body
+######### ---------/TODO: actually different session --------- #########
+
+
     # assert_select "form:match('action', ?)", "/posts/new"
     # "div:match('id', ?)", "id_string"
     # assert_response :success

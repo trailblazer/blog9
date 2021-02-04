@@ -12,6 +12,7 @@ class PostsController < ApplicationController::Web
   endpoint "web:request_approval?!", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
   endpoint "review:review?", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
   endpoint "review:suggest_changes?", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
+  endpoint "review:approve?", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
   endpoint "web:revise_form?", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
   endpoint "web:revise_form_submitted?!", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
 
@@ -70,6 +71,12 @@ class PostsController < ApplicationController::Web
     end.Or do |ctx, contract:, model:, **| # render erroring form
       render html: cell(Post::Write::Cell::Review, model, review_form: contract)
     end
+  end
+
+  def approve
+    endpoint "review:approve?", success: {after: "review:approved?"}, process_model_class: Review do |ctx, model:, contract:, **|
+      render html: cell(Review::Cell::Sent, model)
+    end # there's nothing that (domainically) can go wrong!
   end
 
   def revise_form

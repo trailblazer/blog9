@@ -20,6 +20,8 @@ module Post::Write
             "Post is under review"
           elsif model.state == "edit requested" # FIXME: how to encapsulate that?
             "Review finished, changes suggested"
+          elsif model.state == "approved, ready to publish" # FIXME: how to encapsulate that?
+            "Approved, ready to publish"
           end
         end
       end
