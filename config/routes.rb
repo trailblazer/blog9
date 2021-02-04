@@ -12,6 +12,8 @@ Rails.application.routes.draw do
   get "/reviews/:id/approve"  => "posts#approve", as: :approve_review
   post "/reviews/:id/reject"   => "posts#reject", as: :reject_review
 
+  get "/post/:id/revise" => "posts#revise_form", as: :revise_form
+  patch "/posts/:id/revise"    => "posts#revise", as: :revise_post
 
   get "/my" => "posts#dashboard"
 end

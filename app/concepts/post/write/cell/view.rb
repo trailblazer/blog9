@@ -18,6 +18,8 @@ module Post::Write
         def state
           if model.state == "waiting for review" # FIXME: how to encapsulate that?
             "Post is under review"
+          elsif model.state == "edit requested" # FIXME: how to encapsulate that?
+            "Review finished, changes suggested"
           end
         end
       end

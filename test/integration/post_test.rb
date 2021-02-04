@@ -79,7 +79,7 @@ class PostTest < ActionDispatch::SystemTestCase
 ######### --------- TODO: actually different session --------- #########
     visit "/reviews/#{review.id}" # {process_model} is Review now
 
-    puts page.body
+    # puts page.body
 
     assert_selector "h1", text: "Review Post" # TODO: introduce headline
     assert_selector ".post_content", text: "Are we live, yet?"
@@ -94,7 +94,37 @@ class PostTest < ActionDispatch::SystemTestCase
     puts page.body
     assert_selector "div.input.review_suggestions.field_with_errors" # field with errors # TODO: test error message?
 
+  # Submit valid "Suggest changes"
+    fill_in :review_suggestions, with: suggestions = "Less talk, more rock"
+
+    click_on "Reject!"
+
+    # Suggestions sent
+    assert_selector "h1", text: "Review submitted"
+    assert_selector ".review_suggestions", text: suggestions
 ######### ---------/TODO: actually different session --------- #########
+
+### ****** author
+    visit "/posts/view/#{post_id}"
+
+  # View post (with review)
+    assert_selector "h1", text: "View Post" # TODO: introduce headline
+    assert_selector ".post_content", text: "Are we live, yet?"
+    assert_selector ".post_state", text: "Review finished, changes suggested"
+    assert_actions("Revise post")
+
+
+    click_on "Revise post"
+    assert_selector "h1", text: "Revise Post"
+    assert_selector ".post_content", text: "Are we live, yet?"
+
+    assert_selector ".review_suggestions", text: suggestions
+
+  # TODO: send invalid revise form
+  # Revise form, add some more rock
+
+
+puts page.body
     # assert_select "form:match('action', ?)", "/posts/new"
     # "div:match('id', ?)", "id_string"
     # assert_response :success

@@ -15,6 +15,12 @@ module Workflow
         }
       end
 
+      # domain model: --> review.web
+      #   {model: Review, post: Post}
+
+      # domain model --> post.lib
+      #   {model: Post, review: Review}
+
       graph = Trailblazer::Activity::Introspect::Graph(ReviewWeb)
       suggest_changes = graph.find("suggest_changes!").task
       rejected = graph.find("rejected?").task
@@ -23,10 +29,10 @@ module Workflow
 
       # outgoing message
       # suggest_changes_ext = Trailblazer::Activity::DSL::Linear.VariableMapping(output: {:post => :model, :model => :review, :contract => :contract})
-      # DISCUSS: we set {ctx[:model] => review.post} here
+      # DISCUSS: we set {ctx[:model] => review.post} here                                                                                                 # FIXME: when do we need :review?
       suggest_changes_ext = Trailblazer::Activity::DSL::Linear.VariableMapping(output: ->(inner, original) { {:model => inner[:model].post, :review => inner[:model], :contract => inner[:contract]} } )
       # incoming message
-      rejected_ext        = Trailblazer::Activity::DSL::Linear.VariableMapping(input: {:model => :post, :review => :model}, output: ->(inner, original) { {model: inner[:model], post: inner[:post]} })
+      rejected_ext        = Trailblazer::Activity::DSL::Linear.VariableMapping(input: {:model => :post, :review => :model}, output: [:post, :model] )
 
       bla = suggest_changes_ext.(config: ReviewWeb.to_h[:config], task: Struct.new(:circuit_task).new(suggest_changes))
       ReviewWeb[:wrap_static][suggest_changes] = bla[:wrap_static][suggest_changes]

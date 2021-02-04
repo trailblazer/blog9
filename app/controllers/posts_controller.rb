@@ -12,6 +12,7 @@ class PostsController < ApplicationController::Web
   endpoint "web:request_approval?!", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
   endpoint "review:review?", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
   endpoint "review:suggest_changes?", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
+  endpoint "web:revise_form?", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
 
   def new_form # new_form
     endpoint "web:new_form?", success: {after: "web:New form"} do |ctx, contract:, **|
@@ -63,10 +64,16 @@ class PostsController < ApplicationController::Web
   end
 
   def reject
-    endpoint "review:suggest_changes?", success: {after: "review:SuggestChanges"}, process_model_class: Review do |ctx, model:, contract:, **|
-      render html: cell(Post::Write::Cell::Review, model, review_form: contract)
+    endpoint "review:suggest_changes?", success: {after: "review:rejected?"}, process_model_class: Review do |ctx, model:, contract:, **|
+      render html: cell(Review::Cell::Sent, model)
     end.Or do |ctx, contract:, model:, **| # render erroring form
       render html: cell(Post::Write::Cell::Review, model, review_form: contract)
+    end
+  end
+
+  def revise_form
+    endpoint "web:revise_form?", success: {after: "web:Revise form"} do |ctx, contract:, model:, review:, **|
+      render html: cell(Post::Write::Cell::Revise, contract, form_url: revise_post_path(id: model.id), header: "Revise Post", review: review)
     end
   end
 
