@@ -11,4 +11,5 @@
   <%= link_to "Request approval from editor", request_approval_path(id: model.id) if able?("request_approval?!") %>
   <%= link_to "Revise post", revise_form_path(id: model.id) if able?("revise_form?") %>
   <%= link_to "Publish post", publish_post_path(id: model.id) if able?("publish?!") %>
+  <%= link_to "Archive post", archive_ok_post_path(id: model.id) if able?("archive_ok?") %>
 </div>

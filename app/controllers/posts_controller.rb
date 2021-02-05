@@ -16,6 +16,9 @@ class PostsController < ApplicationController::Web
   endpoint "web:revise_form?", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
   endpoint "web:revise_form_submitted?!", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
   endpoint "web:publish?!", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
+  endpoint "web:archive_ok?", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
+  endpoint "web:archive_cancel?", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
+  endpoint "web:archive?!", find_process_model: true, domain_activity: Trailblazer::Workflow.Advance(scope_workflow_domain_ctx: true, activity: Workflow::Collaboration::WriteWeb)
 
   def new_form # new_form
     endpoint "web:new_form?", success: {after: "web:New form"} do |ctx, contract:, **|
@@ -98,6 +101,25 @@ class PostsController < ApplicationController::Web
     endpoint "web:publish?!", success: {after: "web:published?"}, options_for_domain_ctx: {controller: self} do |ctx, model:, **|
       redirect_to view_post_path(id: model.id) # TODO: flash message!
     end # there's nothing that (domainically) can go wrong!
+  end
+
+  def archive_ok
+    endpoint "web:archive_ok?", success: {after: "web:archive_ok?"} do |ctx, model:, **|
+      render html: cell(Post::Write::Cell::ArchiveOk, model)
+    end
+  end
+
+  # This action doesn't really do anything currently.
+  def archive_cancel
+    endpoint "web:archive_cancel?", success: {after: "web:archive_cancel?"} do |ctx, model:, **|
+      redirect_to view_post_path(id: model.id)
+    end
+  end
+
+  def archive
+    endpoint "web:archive?!", success: {at: "web:success"} do |ctx, model:, **|
+      redirect_to view_post_path(id: model.id)
+    end
   end
 
   private def endpoint(event_name, **options)

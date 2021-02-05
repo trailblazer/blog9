@@ -167,13 +167,36 @@ review = Post.find(post_id).reviews.last # FIXME
   # Publish!
 
     click_on "Publish post"
-puts page.body
     assert_selector "h1", text: "View Post"
     assert_selector ".post_state", text: "Published"
     assert_selector "a.permalink[href='/posts/slayer--what-else-']"
+    assert_actions("Archive post")
+
+# Archive: ok?
+    click_on "Archive post"
+    assert_selector ".post_archive_message", text: "Do you really want to archive {/posts/slayer--what-else-}?"
+
+# Archive: cancel
+    click_on "Cancel!"
+
+puts page.body
+    assert_selector "h1", text: "View Post"
+    assert_selector ".post_state", text: "Published"
+    assert_actions("Archive post")
+
+  # Archive: do it!
+    click_on "Archive post"
+    click_on "Archive forever!"
+
+    assert_selector "h1", text: "View Post"
+    assert_selector ".post_state", text: "Archived"
+    assert_selector ".post_content", text: text
+
 
     # assert_select "form:match('action', ?)", "/posts/new"
     # "div:match('id', ?)", "id_string"
     # assert_response :success
+
+
   end
 end

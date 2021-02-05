@@ -24,6 +24,8 @@ module Post::Write
             "Published"
           elsif model.state == "approved, ready to publish" # FIXME: how to encapsulate that?
             "Approved, ready to publish"
+          elsif model.state == "archived" # FIXME: how to encapsulate that?
+            "Archived"
           end
         end
       end

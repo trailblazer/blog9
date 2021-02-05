@@ -1,0 +1,8 @@
+<h1>Archive Post</h1>
+
+<div class="post_archive_message">
+  Do you really want to archive {<%= slug %>}?
+
+  <%= link_to "Cancel!", archive_cancel_post_path(id: model.id) %>
+  <%= link_to "Archive forever!", archive_post_path(id: model.id) %>
+</div>

@@ -8,6 +8,9 @@ Rails.application.routes.draw do
   patch "/posts/:id/update"    => "posts#update", as: :update_post
   get "/posts/:id/request_approval" => "posts#request_approval", as: :request_approval
   get "/posts/:id/publish" => "posts#publish", as: :publish_post
+  get "/posts/:id/archive_ok" => "posts#archive_ok", as: :archive_ok_post
+  get "/posts/:id/archive_cancel" => "posts#archive_cancel", as: :archive_cancel_post
+  get "/posts/:id/archive" => "posts#archive", as: :archive_post
 
   get "/reviews/:id"          => "posts#review", as: :review
   get "/reviews/:id/approve"  => "posts#approve", as: :approve_review
