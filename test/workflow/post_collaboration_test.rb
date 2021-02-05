@@ -197,8 +197,30 @@ class PostCollaborationTest < Minitest::Spec
       }
     ))
 
-    assert_position ctx, moment.suspend(after: "?Publish!"), moment.before("archive?!"), moment.before("Start.default")
+    assert_position ctx, moment.suspend(after: "?Publish!"), moment.before("archive_ok?"), moment.before("Start.default")
     assert_exposes ctx[:process_model],
+      content: "Even better!",
+      state:   "published",
+      slug:    "/posts/even-better-",
+      reviews: Review.where(post_id: ctx[:process_model].id)
+
+  # Archive ok?
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:archive_ok?", process_model: ctx[:process_model],
+      params: {}))
+
+    assert_position ctx, moment.suspend(after: "?Publish!"), moment.before("archive?!", "archive_cancel?"), moment.before("Start.default")
+    assert_exposes ctx[:process_model],
+      content: "Even better!",
+      state:   "published",
+      slug:    "/posts/even-better-",
+      reviews: Review.where(post_id: ctx[:process_model].id)
+
+  # Archive: cancel
+    signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint, args_for("web:archive_cancel?", process_model: ctx[:process_model],
+      params: {}))
+
+    assert_exposes ctx[:process_model],
+      persisted?: true,
       content: "Even better!",
       state:   "published",
       slug:    "/posts/even-better-",

@@ -846,7 +846,7 @@
       "data": {
         "resumes": [
           [
-            "archive?!",
+            "archive_ok?",
             null
           ]
         ]
@@ -1120,6 +1120,53 @@
       },
       "label": "approve!",
       "parent": "post.lib"
+    },
+    {
+      "id": "archive_ok?",
+      "type": "IntermediateEventCatchMessage",
+      "linksTo": [
+        {
+          "target": "GatewayNone-kks0pw19"
+        }
+      ],
+      "data": {
+      },
+      "label": "archive_ok?",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "GatewayNone-kks0pw19",
+      "type": "EndEventTerminate",
+      "linksTo": [
+
+      ],
+      "data": {
+        "resumes": [
+          [
+            "archive?!",
+            null
+          ],
+          [
+            "archive_cancel?",
+            null
+          ]
+        ]
+      },
+      "label": "suspend",
+      "parent": "post.writer.ui.web"
+    },
+    {
+      "id": "archive_cancel?",
+      "type": "IntermediateEventCatchMessage",
+      "linksTo": [
+        {
+          "target": "GatewayNone-kjbfxkki"
+        }
+      ],
+      "data": {
+      },
+      "label": "archive_cancel?",
+      "parent": "post.writer.ui.web"
     },
     {
       "id": "throw-after-edit_form_submitted?!",

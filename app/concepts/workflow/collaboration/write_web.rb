@@ -30,7 +30,9 @@ module Workflow
         ["web:revise_form?",         ->(process_model:) { process_model.state == "edit requested" }, before("catch-before-?Revise!"), before("revise_form?"), before("Start.default")],
         ["web:revise_form_submitted?!",         ->(process_model:) { process_model.state == "edit requested" }, before("catch-before-?Revise!"), before("revise_form_submitted?!", "revise_form_cancel?"), before("Start.default")],
         ["web:publish?!",         ->(process_model:) { process_model.state == "approved, ready to publish" }, before("catch-before-?Publish!", "catch-before-?Delete!", "catch-before-?Update!"), before("publish?!", "delete?"), before("Start.default")],
-        ["web:archive?!",         ->(process_model:) { process_model.state == "published" }, before("catch-before-?Archive!"), before("archive?!"), before("Start.default")],
+        ["web:archive_ok?",         ->(process_model:) { process_model.state == "published" }, before("catch-before-?Archive!"), before("archive_ok?"), before("Start.default")],
+        ["web:archive_cancel?",         ->(process_model:) { process_model.state == "published" }, before("catch-before-?Archive!"), before("archive_cancel?", "archive?!"), before("Start.default")],
+        ["web:archive?!",         ->(process_model:) { process_model.state == "published" }, before("catch-before-?Archive!"), before("archive_cancel?", "archive?!"), before("Start.default")],
       ]
     end # WriteWeb
   end
