@@ -32,12 +32,15 @@ class AuthTest < Minitest::Spec
           # review:  Workflow::Lane::Write::ReviewWeb,
         },
         messages: [],
-        skip_message_from: [Trailblazer::Activity::Introspect::Graph(Auth::Lane::AuthLib).find("throw-after-?Reset confirm!").task]
+        skip_message_from: [Trailblazer::Activity::Introspect::Graph(Auth::Lane::AuthLib).find("throw-after-?Reset confirm!").task,
+          Trailblazer::Activity::Introspect::Graph(Auth::Lane::AuthLib).find("throw-after-?Confirm email!").task
+        ]
       ) do
         [
           # ["web:new_form?",              ->(process_model:) { process_model.nil? }, start(), start(), start()],
-          ["lib:Auth: encrypted pw, confirm token",              ->(process_model:) { process_model.state.nil? }, start()],
-          ["lib:catch-before-?Reset confirm!",              ->(process_model:) { process_model.state == "password set, please verify email" }, before("catch-before-?Confirm email!", "catch-before-?Reset confirm!")],
+          ["lib:Auth: encrypted pw, confirm token", ->(process_model:) { process_model.state.nil? }, start()],
+          ["lib:catch-before-?Reset confirm!",      ->(process_model:) { process_model.state == "password set, please verify email" }, before("catch-before-?Confirm email!", "catch-before-?Reset confirm!")],
+          ["lib:catch-before-?Confirm email!",      ->(process_model:) { process_model.state == "password set, please verify email" }, before("catch-before-?Confirm email!", "catch-before-?Reset confirm!")],
         ]
       end
 
@@ -50,7 +53,7 @@ class AuthTest < Minitest::Spec
       signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint,
         args_for("lib:Auth: encrypted pw, confirm token", process_model: User.new(email: "yogi@trb.to"), options_for_domain_ctx: {password: "very secret"}, activity: auth_collab))
 
-# we're expecting a {User} model and set {state,password} and #save
+    # we're expecting a {User} model and set {state,password} and #save
       assert_position ctx, moment.suspend(after: "Auth: encrypted pw, confirm token", last_node_id: "Auth: encrypted pw, confirm token")
       assert_exposes ctx[:process_model], #
         persisted?: true,
@@ -67,9 +70,21 @@ class AuthTest < Minitest::Spec
       assert_position ctx, moment.suspend(after: "Auth: encrypted pw, confirm token", last_node_id: "Auth: encrypted pw, confirm token")
       assert_exposes ctx[:process_model], #
         persisted?: true,
-        state: "password set, please verify email",
+        state: "password set, please verify email", # DISCUSS: different state name?
         password: "very secret".reverse,
         verify_account_token: "random characters".reverse + " 2"
+
+  # --------- VERIFY/CONFIRM ACCOUNT
+        # NOTE: we already found the User associated to the {verify_account_token}.
+      signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint,
+        args_for("lib:catch-before-?Confirm email!", process_model: user, options_for_domain_ctx: {}, activity: auth_collab))
+
+      assert_position ctx, moment.suspend(after: "?Confirm email!")
+      assert_exposes ctx[:process_model], #
+        persisted?: true,
+        state: "ready to signin",
+        password: "very secret".reverse,
+        verify_account_token: nil         # the token expired and is deleted.
     end
   end
 
