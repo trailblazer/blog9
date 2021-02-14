@@ -33,7 +33,9 @@ class AuthTest < Minitest::Spec
         },
         messages: [],
         skip_message_from: [Trailblazer::Activity::Introspect::Graph(Auth::Lane::AuthLib).find("throw-after-?Reset confirm!").task,
-          Trailblazer::Activity::Introspect::Graph(Auth::Lane::AuthLib).find("throw-after-?Confirm email!").task
+          Trailblazer::Activity::Introspect::Graph(Auth::Lane::AuthLib).find("throw-after-?Confirm email!").task,
+          Trailblazer::Activity::Introspect::Graph(Auth::Lane::AuthLib).find("throw-after-?Reset password!").task,
+          Trailblazer::Activity::Introspect::Graph(Auth::Lane::AuthLib).find("throw-after-?Update password!").task
         ]
       ) do
         [
@@ -41,6 +43,8 @@ class AuthTest < Minitest::Spec
           ["lib:Auth: encrypted pw, confirm token", ->(process_model:) { process_model.state.nil? }, start()],
           ["lib:catch-before-?Reset confirm!",      ->(process_model:) { process_model.state == "password set, please verify email" }, before("catch-before-?Confirm email!", "catch-before-?Reset confirm!")],
           ["lib:catch-before-?Confirm email!",      ->(process_model:) { process_model.state == "password set, please verify email" }, before("catch-before-?Confirm email!", "catch-before-?Reset confirm!")],
+          ["lib:catch-before-?Reset password!",    ->(process_model:) { ["ready to signin", "password updated, ready to signin"].include?(process_model.state)  }, before("catch-before-?Reset password!")],
+          ["lib:catch-before-?Update password!",    ->(process_model:) { ["password reset, please change password"].include?(process_model.state) }, before("catch-before-?Update password!", "catch-before-?Reset password!")],
         ]
       end
 
@@ -84,6 +88,28 @@ class AuthTest < Minitest::Spec
         persisted?: true,
         state: "ready to signin",
         password: "very secret".reverse,
+        verify_account_token: nil         # the token expired and is deleted.
+
+  # --------- RESET PASSWORD
+      signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint,
+        args_for("lib:catch-before-?Reset password!", process_model: user, options_for_domain_ctx: {}, activity: auth_collab))
+
+      assert_position ctx, moment.suspend(after: "?Reset password!")
+      assert_exposes ctx[:process_model], #
+        persisted?: true,
+        state: "password reset, please change password",
+        password: nil,
+        verify_account_token: "more random".reverse
+
+  # --------- UPDATE PASSWORD
+      signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint,
+        args_for("lib:catch-before-?Update password!", process_model: user, options_for_domain_ctx: {password: "a new beginning"}, activity: auth_collab))
+
+      assert_position ctx, moment.suspend(after: "?Update password!")
+      assert_exposes ctx[:process_model], #
+        persisted?: true,
+        state: "password updated, ready to signin",
+        password: "a new beginning".reverse,
         verify_account_token: nil         # the token expired and is deleted.
     end
   end
