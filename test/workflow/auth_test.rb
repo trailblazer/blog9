@@ -32,18 +32,19 @@ class AuthTest < Minitest::Spec
           # review:  Workflow::Lane::Write::ReviewWeb,
         },
         messages: [],
-        skip_message_from: [Trailblazer::Activity::Introspect::Graph(Auth::Lane::AuthLib).find("throw-after-?Reset confirm!").task,
-          Trailblazer::Activity::Introspect::Graph(Auth::Lane::AuthLib).find("throw-after-?Confirm email!").task,
+        skip_message_from: [Trailblazer::Activity::Introspect::Graph(Auth::Lane::AuthLib).find("throw-after-?Verify account resend!").task,
+          Trailblazer::Activity::Introspect::Graph(Auth::Lane::AuthLib).find("throw-after-?Verify account!").task,
+          Trailblazer::Activity::Introspect::Graph(Auth::Lane::AuthLib).find("throw-after-?Create account!").task,
           Trailblazer::Activity::Introspect::Graph(Auth::Lane::AuthLib).find("throw-after-?Reset password!").task,
           Trailblazer::Activity::Introspect::Graph(Auth::Lane::AuthLib).find("throw-after-?Update password!").task
         ]
       ) do
         [
           # ["web:new_form?",              ->(process_model:) { process_model.nil? }, start(), start(), start()],
-          ["lib:Auth: encrypted pw, confirm token", ->(process_model:) { process_model.state.nil? }, start()],
-          ["lib:catch-before-?Reset confirm!",      ->(process_model:) { process_model.state == "password set, please verify email" }, before("catch-before-?Confirm email!", "catch-before-?Reset confirm!")],
-          ["lib:catch-before-?Confirm email!",      ->(process_model:) { process_model.state == "password set, please verify email" }, before("catch-before-?Confirm email!", "catch-before-?Reset confirm!")],
-          ["lib:catch-before-?Reset password!",    ->(process_model:) { ["ready to signin", "password updated, ready to signin"].include?(process_model.state)  }, before("catch-before-?Reset password!")],
+          ["lib:catch-before-?Create account!", ->(process_model:) { process_model.state.nil? }, start()],
+          ["lib:catch-before-?Verify account resend!",      ->(process_model:) { process_model.state == "password set, please verify email" }, before("catch-before-?Verify account!", "catch-before-?Verify account resend!")],
+          ["lib:catch-before-?Verify account!",      ->(process_model:) { process_model.state == "password set, please verify email" }, before("catch-before-?Verify account!", "catch-before-?Verify account resend!")],
+          ["lib:catch-before-?Reset password!",    ->(process_model:) { ["ready to signin", "password updated, ready to signin"].include?(process_model.state)  }, before("catch-before-?Reset password!", "catch-before-?Login!")],
           ["lib:catch-before-?Update password!",    ->(process_model:) { ["password reset, please change password"].include?(process_model.state) }, before("catch-before-?Update password!", "catch-before-?Reset password!")],
         ]
       end
@@ -55,10 +56,10 @@ class AuthTest < Minitest::Spec
 
   # --------- CREATE
       signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint,
-        args_for("lib:Auth: encrypted pw, confirm token", process_model: User.new(email: "yogi@trb.to"), options_for_domain_ctx: {password: "very secret"}, activity: auth_collab))
+        args_for("lib:catch-before-?Create account!", process_model: User.new(email: "yogi@trb.to"), options_for_domain_ctx: {password: "very secret"}, activity: auth_collab))
 
     # we're expecting a {User} model and set {state,password} and #save
-      assert_position ctx, moment.suspend(after: "Auth: encrypted pw, confirm token", last_node_id: "Auth: encrypted pw, confirm token")
+      assert_position ctx, moment.suspend(after: "?Create account!")
       assert_exposes ctx[:process_model], #
         persisted?: true,
         state: "password set, please verify email",
@@ -69,9 +70,9 @@ class AuthTest < Minitest::Spec
 
   # --------- RESEND CONFIRMATION
       signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint,
-        args_for("lib:catch-before-?Reset confirm!", process_model: user, options_for_domain_ctx: {}, activity: auth_collab))
+        args_for("lib:catch-before-?Verify account resend!", process_model: user, options_for_domain_ctx: {}, activity: auth_collab))
 
-      assert_position ctx, moment.suspend(after: "Auth: encrypted pw, confirm token", last_node_id: "Auth: encrypted pw, confirm token")
+      assert_position ctx, moment.suspend(after: "?Create account!")
       assert_exposes ctx[:process_model], #
         persisted?: true,
         state: "password set, please verify email", # DISCUSS: different state name?
@@ -81,9 +82,9 @@ class AuthTest < Minitest::Spec
   # --------- VERIFY/CONFIRM ACCOUNT
         # NOTE: we already found the User associated to the {verify_account_token}.
       signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint,
-        args_for("lib:catch-before-?Confirm email!", process_model: user, options_for_domain_ctx: {}, activity: auth_collab))
+        args_for("lib:catch-before-?Verify account!", process_model: user, options_for_domain_ctx: {}, activity: auth_collab))
 
-      assert_position ctx, moment.suspend(after: "?Confirm email!")
+      assert_position ctx, moment.suspend(after: "?Verify account!")
       assert_exposes ctx[:process_model], #
         persisted?: true,
         state: "ready to signin",
