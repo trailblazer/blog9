@@ -20,7 +20,7 @@ module Blog9
 
       # Trailblazer::Workflow::Collaboration::Synchronous::Endpoint.insert_success_if!(self) # insert steps after {domain_activity} to find out if the current state machine position is "successful".
 
-      Trailblazer::Endpoint::Protocol::Controller.insert_copy_to_domain_ctx!(self, :current_user => :current_user)
+      Trailblazer::Endpoint::Protocol::Controller.insert_copy_to_domain_ctx!(self, {:current_user => :current_user})
     end # Protocol
 
     class Adapter < Trailblazer::Endpoint::Adapter::Web

@@ -5,8 +5,8 @@ class AuthTest < Minitest::Spec
   include Trailblazer::Workflow::Testing::AssertPosition
 
     # TODO: abstract to endpoint/test
-  def args_for(*args)
-    [ctx_for(*args), {context_options: {aliases: {:"contract.default" => :contract}, container_class: Trailblazer::Context::Container::WithAliases, replica_class: Trailblazer::Context::Store::IndifferentAccess}, throw: []}]
+  def args_for(*args, **kws)
+    [ctx_for(*args, **kws), context_options: {aliases: {:"contract.default" => :contract}, container_class: Trailblazer::Context::Container::WithAliases, replica_class: Trailblazer::Context::Store::IndifferentAccess}, throw: []]
   end
 
   # TODO: abstract to endpoint/test
@@ -54,7 +54,7 @@ class AuthTest < Minitest::Spec
       Trailblazer::Endpoint::Protocol::Controller.insert_copy_to_domain_ctx!(endpoint, {:process_model => :model}, before: :invoke_workflow) # in our OPs, we use {ctx[:model]}. In the outer endpoint, we use {:process_model}
       Trailblazer::Endpoint::Protocol::Controller.insert_copy_from_domain_ctx!(endpoint, {:model => :process_model}, after: :invoke_workflow) # in our OPs, we use {ctx[:model]}. In the outer endpoint, we use {:process_model}
 
-  # --------- CREATE
+  # --------- CREATE ACCOUNT
       signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint,
         args_for("lib:catch-before-?Create account!", process_model: User.new(email: "yogi@trb.to"), options_for_domain_ctx: {password: "very secret"}, activity: auth_collab))
 
@@ -68,7 +68,7 @@ class AuthTest < Minitest::Spec
 
       user = ctx[:process_model]
 
-  # --------- RESEND CONFIRMATION
+  # --------- RESEND ACCOUNT VERIFICATION EMAIL
       signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint,
         args_for("lib:catch-before-?Verify account resend!", process_model: user, options_for_domain_ctx: {}, activity: auth_collab))
 
@@ -81,6 +81,7 @@ class AuthTest < Minitest::Spec
 
   # --------- VERIFY/CONFIRM ACCOUNT
         # NOTE: we already found the User associated to the {verify_account_token}.
+        #       this should be done in the PM find_account_from_verification_token
       signal, (ctx, _) = Trailblazer::Developer.wtf?(endpoint,
         args_for("lib:catch-before-?Verify account!", process_model: user, options_for_domain_ctx: {}, activity: auth_collab))
 

@@ -15,8 +15,8 @@ class PostCollaborationTest < Minitest::Spec
   end
 
   # TODO: abstract to endpoint/test
-  def args_for(*args)
-    [ctx_for(*args), {context_options: {aliases: {:"contract.default" => :contract}, container_class: Trailblazer::Context::Container::WithAliases, replica_class: Trailblazer::Context::Store::IndifferentAccess}, throw: []}]
+  def args_for(*args, **kws)
+    [ctx_for(*args, **kws), {context_options: {aliases: {:"contract.default" => :contract}, container_class: Trailblazer::Context::Container::WithAliases, replica_class: Trailblazer::Context::Store::IndifferentAccess}, throw: []}]
   end
 
   # TODO: abstract to endpoint/test
