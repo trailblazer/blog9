@@ -1,24 +1,25 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
 
-Things you may want to cover:
+## ChromeDriver on Ubuntu 20.04
 
-* Ruby version
+You might get an error when running integration tests on Ubuntu.
 
-* System dependencies
+```
+Failed to find Chrome binary. (Webdrivers::BrowserNotFound)
+```
 
-* Configuration
+```
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo apt install ./google-chrome-stable_current_amd64.deb
+```
 
-* Database creation
+Stolen from: https://tecadmin.net/setup-selenium-chromedriver-on-ubuntu/
 
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+```
+wget https://chromedriver.storage.googleapis.com/2.41/chromedriver_linux64.zip
+unzip chromedriver_linux64.zip
+sudo mv chromedriver /usr/bin/chromedriver
+sudo chown root:root /usr/bin/chromedriver
+sudo chmod +x /usr/bin/chromedriver
+```
