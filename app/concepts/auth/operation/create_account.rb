@@ -1,5 +1,5 @@
 module Auth::Operation
-  module Signup
+  module CreateAccount
 
     class EmailPasswordBased < Trailblazer::Operation
       step :state
