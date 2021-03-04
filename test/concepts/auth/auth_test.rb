@@ -35,18 +35,62 @@ class AuthOperationTest < Minitest::Spec
   it "what" do
     Auth = A::Auth
 
-    #:op-call-missing-kw
-    # test/concepts/auth/operation_test.rb
-    it "validates email and password" do
-      result = Auth::Operation::CreateAccount.({}) # op-interface
-      #=> ArgumentError: missing keyword: :email
+    assert_raises ArgumentError do
+      #:op-call-missing-kw
+      # test/concepts/auth/operation_test.rb
+      it "validates email and password" do
+        result = Auth::Operation::CreateAccount.({}) # op-interface
+        #=> ArgumentError: missing keyword: :email
+      end
+      #:op-call-missing-kw end
     end
-    #:op-call-missing-kw end
 
+    assert_raises ArgumentError do
+      #:op-call-missing-passwords
+      # test/concepts/auth/operation_test.rb
+      it "validates email and password" do
+        result = Auth::Operation::CreateAccount.({email: "yogi@trb.to"}) # here's an email!
+        #=> ArgumentError: missing keywords: :password, :password_confirm
+        #     app/concepts/auth/operation/create_account.rb:22:in `passwords_identical?'
+      end
+      #:op-call-missing-passwords end
+    end
 
+    output = nil
+    output, _ = capture_io do
+      assert_raises ArgumentError do
+        #:op-call-missing-passwords-wtf
+        # test/concepts/auth/operation_test.rb
+        it "validates email and password" do
+          result = Auth::Operation::CreateAccount.wtf?({email: "yogi@trb.to"})
+        end
+        #:op-call-missing-passwords-wtf end
+      end
 
-    assert result.success?
+    end
+    puts output.gsub("AuthOperationTest::A::", "")
 
+    output = nil
+    output, _ = capture_io do
+      #:op-call-wtf
+      # test/concepts/auth/operation_test.rb
+      it "validates email and password" do
+        result = Auth::Operation::CreateAccount.wtf?(
+          {
+            email:            "yogi@trb.to",
+            password:         "1234",
+            password_confirm: "1234",
+          }
+        )
+
+        assert result.success?
+      end
+      #:op-call-wtf end
+
+    end
+    puts output.gsub("AuthOperationTest::A::", "")
+
+      # assert result.success?
   end
 
   it "bla" do
