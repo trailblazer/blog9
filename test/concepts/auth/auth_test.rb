@@ -6,7 +6,7 @@ class AuthOperationTest < Minitest::Spec
     end
 
     #:op
-    # app/concepts/auth/operation/create_account/with_email_and_password.rb
+    # app/concepts/auth/operation/create_account.rb
     module Auth::Operation
       #:steps
       class CreateAccount < Trailblazer::Operation
@@ -90,7 +90,25 @@ class AuthOperationTest < Minitest::Spec
     end
     puts output.gsub("AuthOperationTest::A::", "")
 
-      # assert result.success?
+    output = nil
+    output, _ = capture_io do
+      #:op-call-failure
+      # test/concepts/auth/operation_test.rb
+      it "validates email and password" do
+        result = Auth::Operation::CreateAccount.wtf?(
+          {
+            email:            "yogi@trb", # invalid email.
+            password:         "1234",
+            password_confirm: "1234",
+          }
+        )
+
+        assert result.failure?
+      end
+      #:op-call-failure end
+
+    end
+    puts output.gsub("AuthOperationTest::A::", "")
   end
 
   it "bla" do
