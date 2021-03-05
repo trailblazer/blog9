@@ -1,0 +1,2 @@
+class VerifyAccountToken < ApplicationRecord
+end
