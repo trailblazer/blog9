@@ -470,5 +470,6 @@ class AuthOperationTest < Minitest::Spec
       end
       #:save-account-safe end
     end
+    puts output.gsub("AuthOperationTest::F::", "")
   end
 end
