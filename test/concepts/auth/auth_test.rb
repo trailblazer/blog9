@@ -323,4 +323,152 @@ class AuthOperationTest < Minitest::Spec
     puts output.gsub("AuthOperationTest::D::", "")
   end
 
+# save account
+  module E
+    module Auth
+    end
+
+    #:op-save-account
+    # app/concepts/auth/operation/create_account.rb
+    require "bcrypt"
+
+    module Auth::Operation
+      class CreateAccount < Trailblazer::Operation
+        step :check_email
+        fail :email_invalid_msg, fail_fast: true
+        step :passwords_identical?
+        fail :passwords_invalid_msg, fail_fast: true
+        step :password_hash
+        step :save_account
+
+        #~meth
+        def check_email(ctx, email:, **)
+          email =~ /\A[^,;@ \r\n]+@[^,@; \r\n]+\.[^,@; \r\n]+\z/
+        end
+
+        def passwords_identical?(ctx, password:, password_confirm:, **)
+          password == password_confirm
+        end
+
+        def email_invalid_msg(ctx, **)
+          ctx[:error] = "Email invalid."
+        end
+
+        def passwords_invalid_msg(ctx, **)
+          ctx[:error] = "Passwords do not match."
+        end
+        def password_hash(ctx, password:, password_hash_cost: BCrypt::Engine::MIN_COST, **) # stolen from Rodauth.
+          ctx[:password_hash] = BCrypt::Password.create(password, cost: password_hash_cost)
+        end
+        #~meth end
+        def save_account(ctx, email:, password_hash:, **)
+          user = User.create(email: email, password: password_hash)
+          ctx[:user] = user
+        end
+      end
+    end
+    #:op-save-account end
+  end
+
+  before { User.delete_all }
+  it "what" do
+    Auth = E::Auth
+
+    output = nil
+    output, _ = capture_io do
+      #:save-account
+      # test/concepts/auth/operation_test.rb
+      it "validates input, encrypts the password, and saves user" do
+        result = Auth::Operation::CreateAccount.wtf?(
+          {
+            email:            "yogi@trb.to",
+            password:         "1234",
+            password_confirm: "1234",
+          }
+        )
+
+        assert result.success?
+
+        user = result[:user]
+        assert user.persisted?
+        assert_equal "yogi@trb.to", user.email
+        assert_equal 60, user.password.size
+      end
+      #:save-account end
+
+      assert_raises ActiveRecord::RecordNotUnique do
+        #:save-account-test-unique
+        it "doesn't allow two users with same email" do
+          options = {
+              email:            "yogi@trb.to", # invalid email.
+              password:         "1234",
+              password_confirm: "1234",
+            }
+
+          result = Auth::Operation::CreateAccount.wtf?(options)
+          assert result.success?
+
+          result = Auth::Operation::CreateAccount.wtf?(options) # throws an exception!
+          assert result.failure?
+        end
+        #:save-account-test-unique end
+      end
+
+    end
+    puts output.gsub("AuthOperationTest::E::", "")
+  end
+
+  module F
+    module Auth
+    end
+
+    #:op-save-account-safe
+    # app/concepts/auth/operation/create_account.rb
+    require "bcrypt"
+
+    module Auth::Operation
+      class CreateAccount < E::Auth::Operation::CreateAccount
+        # ...
+
+        #:save-account-def
+        def save_account(ctx, email:, password_hash:, **)
+          begin
+            user = User.create(email: email, password: password_hash)
+          rescue ActiveRecord::RecordNotUnique
+            ctx[:error] = "Email #{email} is already taken."
+            return false
+          end
+
+          ctx[:user] = user
+        end
+        #:save-account-def end
+      end
+    end
+    #:op-save-account-safe end
+  end
+
+  it "what" do
+    Auth = F::Auth
+
+    output = nil
+    output, _ = capture_io do
+    #:save-account-safe
+      it "doesn't allow two users with same email" do
+        options = {
+            email:            "yogi@trb.to", # invalid email.
+            password:         "1234",
+            password_confirm: "1234",
+          }
+
+        result = Auth::Operation::CreateAccount.wtf?(options)
+        assert result.success?
+
+        result = Auth::Operation::CreateAccount.wtf?(options)
+        assert result.failure?
+        assert_equal "Email yogi@trb.to is already taken.", result[:error]
+        assert_nil result[:user]
+      end
+      #:save-account-safe end
+    end
+  end
 end

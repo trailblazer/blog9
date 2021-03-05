@@ -35,6 +35,7 @@ ActiveRecord::Schema.define(version: 2021_02_09_173908) do
     t.text "state"
     t.text "password"
     t.text "verify_account_token"
+    t.index ["email"], name: "index_users_on_email", unique: true
   end
 
 end
