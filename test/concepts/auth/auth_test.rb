@@ -260,7 +260,7 @@ class AuthOperationTest < Minitest::Spec
     module Auth
     end
 
-    #:op-pw
+    #:op-password-hash
     # app/concepts/auth/operation/create_account.rb
     require "bcrypt"
 
@@ -293,7 +293,7 @@ class AuthOperationTest < Minitest::Spec
         end
       end
     end
-    #:op-pw end
+    #:op-password-hash end
   end
 
   it "what" do
@@ -301,9 +301,9 @@ class AuthOperationTest < Minitest::Spec
 
     output = nil
     output, _ = capture_io do
-      #:email-wrong
+      #:password-hash
       # test/concepts/auth/operation_test.rb
-      it "validates email" do
+      it "validates input, encrypts the password" do
         result = Auth::Operation::CreateAccount.wtf?(
           {
             email:            "yogi@trb.to", # invalid email.
@@ -313,10 +313,11 @@ class AuthOperationTest < Minitest::Spec
         )
 
         assert result.success?
+        assert_equal "yogi@trb.to", result[:email]
         # {password_hash} is something like "$2a$04$PgVsy.WbWmJ2tTT6pbDL..zSSQ6YQnlCTjsW8xczE5UeqeQw.EgAK"
         assert_equal 60, result[:password_hash].size
       end
-      #:email-wrong end
+      #:password-hash end
 
     end
     puts output.gsub("AuthOperationTest::D::", "")
