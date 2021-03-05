@@ -13,6 +13,7 @@ class AuthOperationTest < Minitest::Spec
         step :check_email
         step :passwords_identical?
       #:steps end
+
         #:check_email
         def check_email(ctx, email:, **)
           email =~ /\A[^,;@ \r\n]+@[^,@; \r\n]+\.[^,@; \r\n]+\z/ # login_email_regexp, stolen from Rodauth.
@@ -111,23 +112,214 @@ class AuthOperationTest < Minitest::Spec
     puts output.gsub("AuthOperationTest::A::", "")
   end
 
-  it "bla" do
-    Auth = A::Auth
+# introduce {fail}, but wrong
+  module B
+    module Auth
+    end
 
-    ctx = {
-      email: "fred@trb"
-    }
+    #:op-fail
+    # app/concepts/auth/operation/create_account.rb
+    module Auth::Operation
+      class CreateAccount < Trailblazer::Operation
+        step :check_email
+        fail :email_invalid_msg       # {fail} places steps on the failure track.
+        step :passwords_identical?
+        fail :passwords_invalid_msg
 
-    result = Auth::Operation::CreateAccount.(ctx) # op-interface
+        #~meth
+        def check_email(ctx, email:, **)
+          email =~ /\A[^,;@ \r\n]+@[^,@; \r\n]+\.[^,@; \r\n]+\z/
+        end
 
-    assert result.failure?
+        def passwords_identical?(ctx, password:, password_confirm:, **)
+          password == password_confirm
+        end
+        #~meth end
+
+        def email_invalid_msg(ctx, **)
+          ctx[:error] = "Email invalid."
+        end
+
+        def passwords_invalid_msg(ctx, **)
+          ctx[:error] = "Passwords do not match."
+        end
+      end
+    end
+    #:op-fail end
+  end
+
+  it "what" do # FIXME: this test currently fails
+    Auth = B::Auth
+
+    output = nil
+    output, _ = capture_io do
+      #:op-wrong-email-wrong
+      # test/concepts/auth/operation_test.rb
+      it "returns error message for invalid email" do
+        result = Auth::Operation::CreateAccount.wtf?(
+          {
+            email:            "yogi@trb", # invalid email.
+            password:         "1234",
+            password_confirm: "1234",
+          }
+        )
+
+        assert result.failure?
+        assert_equal "Email invalid.", result[:error]
+        #=> Expected: "Email invalid."
+        # Actual: "Passwords do not match."
+      end
+      #:op-wrong-email-wrong end
+
+    end
+    puts output.gsub("AuthOperationTest::B::", "")
+  end
+
+# wire fail correctly
+  module C
+    module Auth
+    end
+
+    #:op-fail-fast
+    # app/concepts/auth/operation/create_account.rb
+    module Auth::Operation
+      class CreateAccount < Trailblazer::Operation
+        step :check_email
+        fail :email_invalid_msg, fail_fast: true
+        step :passwords_identical?
+        fail :passwords_invalid_msg, fail_fast: true
+        #~meth
+        def check_email(ctx, email:, **)
+          email =~ /\A[^,;@ \r\n]+@[^,@; \r\n]+\.[^,@; \r\n]+\z/
+        end
+
+        def passwords_identical?(ctx, password:, password_confirm:, **)
+          password == password_confirm
+        end
+
+        def email_invalid_msg(ctx, **)
+          ctx[:error] = "Email invalid."
+        end
+
+        def passwords_invalid_msg(ctx, **)
+          ctx[:error] = "Passwords do not match."
+        end
+        #~meth end
+      end
+    end
+    #:op-fail-fast end
   end
 
   it "what" do
-    ctx = {
-      email: "fred@trb"
-    }
+    Auth = C::Auth
 
-    result = Auth::Operation::CreateAccount.wtf?(ctx) # developer support
+    output = nil
+    output, _ = capture_io do
+      #:email-wrong
+      # test/concepts/auth/operation_test.rb
+      it "validates email" do
+        result = Auth::Operation::CreateAccount.wtf?(
+          {
+            email:            "yogi@trb", # invalid email.
+            password:         "1234",
+            password_confirm: "1234",
+          }
+        )
+
+        assert result.failure?
+        assert_equal "Email invalid.", result[:error]
+      end
+      #:email-wrong end
+
+    end
+    puts output.gsub("AuthOperationTest::C::", "")
+
+    output, _ = capture_io do
+      #:password-wrong
+      # test/concepts/auth/operation_test.rb
+      it "validates passwords" do
+        result = Auth::Operation::CreateAccount.wtf?(
+          {
+            email:            "yogi@trb.to",
+            password:         "12345678",
+            password_confirm: "1234",
+          }
+        )
+
+        assert result.failure?
+        assert_equal "Passwords do not match.", result[:error]
+      end
+      #:password-wrong end
+
+    end
+    puts output.gsub("AuthOperationTest::C::", "")
   end
+
+# create password
+  module D
+    module Auth
+    end
+
+    #:op-pw
+    # app/concepts/auth/operation/create_account.rb
+    require "bcrypt"
+
+    module Auth::Operation
+      class CreateAccount < Trailblazer::Operation
+        step :check_email
+        fail :email_invalid_msg, fail_fast: true
+        step :passwords_identical?
+        fail :passwords_invalid_msg, fail_fast: true
+        step :password_hash
+        #~meth
+        def check_email(ctx, email:, **)
+          email =~ /\A[^,;@ \r\n]+@[^,@; \r\n]+\.[^,@; \r\n]+\z/
+        end
+
+        def passwords_identical?(ctx, password:, password_confirm:, **)
+          password == password_confirm
+        end
+
+        def email_invalid_msg(ctx, **)
+          ctx[:error] = "Email invalid."
+        end
+
+        def passwords_invalid_msg(ctx, **)
+          ctx[:error] = "Passwords do not match."
+        end
+        #~meth end
+        def password_hash(ctx, password:, password_hash_cost: BCrypt::Engine::MIN_COST, **) # stolen from Rodauth.
+          ctx[:password_hash] = BCrypt::Password.create(password, cost: password_hash_cost)
+        end
+      end
+    end
+    #:op-pw end
+  end
+
+  it "what" do
+    Auth = D::Auth
+
+    output = nil
+    output, _ = capture_io do
+      #:email-wrong
+      # test/concepts/auth/operation_test.rb
+      it "validates email" do
+        result = Auth::Operation::CreateAccount.wtf?(
+          {
+            email:            "yogi@trb.to", # invalid email.
+            password:         "1234",
+            password_confirm: "1234",
+          }
+        )
+
+        assert result.success?
+        # {password_hash} is something like "$2a$04$PgVsy.WbWmJ2tTT6pbDL..zSSQ6YQnlCTjsW8xczE5UeqeQw.EgAK"
+        assert_equal 60, result[:password_hash].size
+      end
+      #:email-wrong end
+
+    end
+    puts output.gsub("AuthOperationTest::D::", "")
+  end
+
 end
