@@ -370,7 +370,7 @@ class AuthOperationTest < Minitest::Spec
     #:op-save-account end
   end
 
-  before { User.delete_all }
+  before { User.delete_all; VerifyAccountToken.delete_all }
   it "what" do
     Auth = E::Auth
 
@@ -473,7 +473,7 @@ class AuthOperationTest < Minitest::Spec
     puts output.gsub("AuthOperationTest::F::", "")
   end
 
-  # generate verify token
+# verify account token
   module G
     module Auth
     end
@@ -529,8 +529,8 @@ class AuthOperationTest < Minitest::Spec
           ctx[:user] = user
         end
         #~meth end
-        def generate_verify_account_token(ctx, **)
-          ctx[:verify_account_token] = SecureRandom.urlsafe_base64(32)
+        def generate_verify_account_token(ctx, secure_random: SecureRandom, **)
+          ctx[:verify_account_token] = secure_random.urlsafe_base64(32)
         end
 
         def save_verify_account_token(ctx, verify_account_token:, user:, **)
@@ -548,6 +548,143 @@ class AuthOperationTest < Minitest::Spec
 
   it "what" do
     Auth = G::Auth
+
+    output = nil
+    output, _ = capture_io do
+      #:verify-token
+      # test/concepts/auth/operation_test.rb
+      it "validates input, encrypts the password, saves user, and creates a verify-account token" do
+        result = Auth::Operation::CreateAccount.wtf?(
+          {
+            email:            "yogi@trb.to",
+            password:         "1234",
+            password_confirm: "1234",
+          }
+        )
+
+        assert result.success?
+
+        user = result[:user]
+        assert user.persisted?
+        assert_equal "yogi@trb.to", user.email
+        assert_equal 60, user.password.size
+
+        verify_account_token = VerifyAccountToken.where(user_id: user.id)[0]
+        # token is something like "aJK1mzcc6adgGvcJq8rM_bkfHk9FTtjypD8x7RZOkDo"
+        assert_equal 43, verify_account_token.token.size
+      end
+      #:verify-token end
+
+      #:verify-token-unique
+      class NotRandom
+        def self.urlsafe_base64(*)
+          "this is not random"
+        end
+      end
+
+      it "fails when trying to insert the same {verify_account_token} twice" do
+        options = {
+          email:            "fred@trb.to",
+          password:         "1234",
+          password_confirm: "1234",
+          secure_random:    NotRandom # inject a test dependency.
+        }
+
+        result = Auth::Operation::CreateAccount.wtf?(options)
+        assert result.success?
+        assert_equal "this is not random", result[:verify_account_token]
+
+        result = Auth::Operation::CreateAccount.wtf?(options.merge(email: "celso@trb.to"))
+        assert result.failure? # verify account token is not unique.
+        assert_equal "Please try again.", result[:error]
+      end
+      #:verify-token-unique end
+    end
+    puts output.gsub("AuthOperationTest::G::", "")
+  end
+
+# verify account email
+  module H
+    module Auth
+    end
+
+    #:op-verify-email
+    # app/concepts/auth/operation/create_account.rb
+    require "bcrypt"
+
+    module Auth::Operation
+      class CreateAccount < Trailblazer::Operation
+        step :check_email
+        fail :email_invalid_msg, fail_fast: true
+        step :passwords_identical?
+        fail :passwords_invalid_msg, fail_fast: true
+        step :password_hash
+        step :save_account
+        step :generate_verify_account_token
+        step :save_verify_account_token
+        step :send_verify_account_email
+
+        #~meth
+        def check_email(ctx, email:, **)
+          email =~ /\A[^,;@ \r\n]+@[^,@; \r\n]+\.[^,@; \r\n]+\z/
+        end
+
+        def passwords_identical?(ctx, password:, password_confirm:, **)
+          password == password_confirm
+        end
+
+        def email_invalid_msg(ctx, **)
+          ctx[:error] = "Email invalid."
+        end
+
+        def passwords_invalid_msg(ctx, **)
+          ctx[:error] = "Passwords do not match."
+        end
+        def password_hash(ctx, password:, password_hash_cost: BCrypt::Engine::MIN_COST, **) # stolen from Rodauth.
+          ctx[:password_hash] = BCrypt::Password.create(password, cost: password_hash_cost)
+        end
+
+        def save_account(ctx, email:, password_hash:, **)
+          user = User.create(email: email, password: password_hash)
+          ctx[:user] = user
+        end
+
+        def save_account(ctx, email:, password_hash:, **)
+          begin
+            user = User.create(email: email, password: password_hash)
+          rescue ActiveRecord::RecordNotUnique
+            ctx[:error] = "Email #{email} is already taken."
+            return false
+          end
+
+          ctx[:user] = user
+        end
+        def generate_verify_account_token(ctx, secure_random: SecureRandom, **)
+          ctx[:verify_account_token] = secure_random.urlsafe_base64(32)
+        end
+
+        def save_verify_account_token(ctx, verify_account_token:, user:, **)
+          begin
+            VerifyAccountToken.create(user_id: user.id, token: verify_account_token)
+          rescue ActiveRecord::RecordNotUnique
+            ctx[:error] = "Please try again."
+            return false
+          end
+        end
+        #~meth end
+
+        def send_verify_account_email(ctx, verify_account_token:, user:, **)
+          token_path = "#{user.id}_#{verify_account_token}" # stolen from Rodauth.
+
+          AuthMailer.with(email: user.email, token_path: token_path)
+        end
+      end
+    end
+    #:op-verify-email end
+  end
+
+  it "what" do
+    Auth = H::Auth
 
     output = nil
     output, _ = capture_io do

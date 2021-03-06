@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_02_09_173908) do
+ActiveRecord::Schema.define(version: 2021_03_05_191238) do
 
   create_table "posts", force: :cascade do |t|
     t.text "content"
@@ -36,6 +36,14 @@ ActiveRecord::Schema.define(version: 2021_02_09_173908) do
     t.text "password"
     t.text "verify_account_token"
     t.index ["email"], name: "index_users_on_email", unique: true
+  end
+
+  create_table "verify_account_tokens", force: :cascade do |t|
+    t.integer "user_id"
+    t.text "token"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["token"], name: "index_verify_account_tokens_on_token", unique: true
   end
 
 end
