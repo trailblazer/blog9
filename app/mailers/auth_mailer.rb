@@ -1,3 +1,4 @@
+# https://guides.rubyonrails.org/action_mailer_basics.html#generating-urls-in-action-mailer-views
 class AuthMailer < ApplicationMailer
   default from: 'notifications@example.com'
 

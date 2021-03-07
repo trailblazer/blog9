@@ -676,43 +676,47 @@ class AuthOperationTest < Minitest::Spec
         def send_verify_account_email(ctx, verify_account_token:, user:, **)
           token_path = "#{user.id}_#{verify_account_token}" # stolen from Rodauth.
 
-          AuthMailer.with(email: user.email, verify_token: token_path).welcome_email.deliver_now
+          ctx[:email] = AuthMailer.with(email: user.email, verify_token: token_path).welcome_email.deliver_now
         end
       end
     end
     #:op-verify-email end
   end
 
+include ActionMailer::TestHelper
   it "what" do
     Auth = H::Auth
 
     output = nil
     output, _ = capture_io do
-      #:verify-token
-      # test/concepts/auth/operation_test.rb
-      it "validates input, encrypts the password, saves user, and creates a verify-account token" do
-        result = Auth::Operation::CreateAccount.wtf?(
-          {
-            email:            "yogi@trb.to",
-            password:         "1234",
-            password_confirm: "1234",
-          }
-        )
+      assert_emails 1 do
+        #:verify-email
+        # test/concepts/auth/operation_test.rb
+        it "validates input, encrypts the password, saves user,
+              creates a verify-account token and send a welcome email" do
+          result = Auth::Operation::CreateAccount.wtf?(
+            {
+              email:            "yogi@trb.to",
+              password:         "1234",
+              password_confirm: "1234",
+            }
+          )
 
-        assert result.success?
+          assert result.success?
 
-        user = result[:user]
-        assert user.persisted?
-        assert_equal "yogi@trb.to", user.email
-        assert_equal 60, user.password.size
+          user = result[:user]
+          assert user.persisted?
+          assert_equal "yogi@trb.to", user.email
+          assert_equal 60, user.password.size
 
-        verify_account_token = VerifyAccountToken.where(user_id: user.id)[0]
-        # token is something like "aJK1mzcc6adgGvcJq8rM_bkfHk9FTtjypD8x7RZOkDo"
-        assert_equal 43, verify_account_token.token.size
+          verify_account_token = VerifyAccountToken.where(user_id: user.id)[0]
+          # token is something like "aJK1mzcc6adgGvcJq8rM_bkfHk9FTtjypD8x7RZOkDo"
+          assert_equal 43, verify_account_token.token.size
 
-        assert_enqueued_emails # TODO: discuss, coupled to Rails
+          assert_match /\/auth\/verify_account\/#{user.id}_#{verify_account_token.token}/, result[:email].body.to_s
+        end
       end
-      #:verify-token end
+      #:verify-email end
     end
     puts output.gsub("AuthOperationTest::H::", "")
   end
