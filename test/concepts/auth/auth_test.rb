@@ -676,7 +676,7 @@ class AuthOperationTest < Minitest::Spec
         def send_verify_account_email(ctx, verify_account_token:, user:, **)
           token_path = "#{user.id}_#{verify_account_token}" # stolen from Rodauth.
 
-          AuthMailer.with(email: user.email, token_path: token_path)
+          AuthMailer.with(email: user.email, verify_token: token_path).welcome_email.deliver_now
         end
       end
     end
@@ -709,9 +709,11 @@ class AuthOperationTest < Minitest::Spec
         verify_account_token = VerifyAccountToken.where(user_id: user.id)[0]
         # token is something like "aJK1mzcc6adgGvcJq8rM_bkfHk9FTtjypD8x7RZOkDo"
         assert_equal 43, verify_account_token.token.size
+
+        assert_enqueued_emails # TODO: discuss, coupled to Rails
       end
       #:verify-token end
     end
-    puts output.gsub("AuthOperationTest::G::", "")
+    puts output.gsub("AuthOperationTest::H::", "")
   end
 end

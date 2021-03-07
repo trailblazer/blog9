@@ -21,4 +21,9 @@ Rails.application.routes.draw do
 
   get "/posts/:filename" => "posts#view_from_slug", as: :post_slug
   get "/my" => "posts#dashboard"
+
+
+
+
+  get "/auth/verify_account/:token" => "auth#verify_account", as: :verify_account
 end
