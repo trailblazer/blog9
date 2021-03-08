@@ -4,6 +4,11 @@ class AuthOperationTest < Minitest::Spec
   before { User.delete_all; VerifyAccountToken.delete_all }
   include ActionMailer::TestHelper
 
+  def it(*)
+    yield
+  end
+
+
   module A
     module Auth
     end
@@ -30,10 +35,6 @@ class AuthOperationTest < Minitest::Spec
     end
     #:op end
 
-  end
-
-  def it(*)
-    yield
   end
 
   it "what" do
