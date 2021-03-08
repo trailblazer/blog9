@@ -90,8 +90,8 @@ class Auth2Test < Minitest::Spec
     module Auth
     end
 
-    #:op-verify-find
-    module Auth::Operation
+    #:token-utils
+    module Auth
       module TokenUtils # stolen from Rodauth
         module_function
 
@@ -105,7 +105,12 @@ class Auth2Test < Minitest::Spec
           Rack::Utils.secure_compare(provided.ljust(actual.length), actual) && provided.length == actual.length
         end
       end
+    end
+    #:token-utils end
 
+    #:op-verify-find
+    # app/concepts/auth/operation/verify_account.rb
+    module Auth::Operation
       class VerifyAccount < Trailblazer::Operation
         step :extract_from_token
         step :find_verify_account_key
@@ -116,7 +121,7 @@ class Auth2Test < Minitest::Spec
         step :expire_verify_account_token
 
         def extract_from_token(ctx, verify_account_token:, **)
-          id, key = TokenUtils.split_token(verify_account_token)
+          id, key = Auth::TokenUtils.split_token(verify_account_token)
 
           ctx[:id]  = id
           ctx[:key] = key # returns false if we don't have a key.
@@ -131,7 +136,7 @@ class Auth2Test < Minitest::Spec
         end
 
         def compare_keys(ctx, verify_account_key:, key:, **)
-          TokenUtils.timing_safe_eql?(key, verify_account_key.token) # a hack-proof == comparison.
+          Auth::TokenUtils.timing_safe_eql?(key, verify_account_key.token) # a hack-proof == comparison.
         end
 
         def state(ctx, user:, **)
@@ -150,6 +155,7 @@ class Auth2Test < Minitest::Spec
     #:op-verify-find end
   end
 
+  #:valid-create-options
   let(:valid_create_options) {
     {
       email:            "yogi@trb.to",
@@ -157,6 +163,7 @@ class Auth2Test < Minitest::Spec
       password_confirm: "1234",
     }
   }
+  #:valid-create-options end
 
   before { User.delete_all; VerifyAccountToken.delete_all }
 
@@ -168,7 +175,6 @@ class Auth2Test < Minitest::Spec
       #:verify-find
       # test/concepts/auth/operation_test.rb
       it "allows finding an account from {verify_account_token}" do
-      # create user account
         result = Test::Auth::Operation::CreateAccount.wtf?(valid_create_options)
         assert result.success?
 
@@ -182,16 +188,20 @@ class Auth2Test < Minitest::Spec
         assert_equal "yogi@trb.to", user.email
         assert_nil VerifyAccountToken.where(user_id: user.id)[0]
       end
+      #:verify-find end
 
+      #:verify-invalid-id
       it "fails with invalid ID prefix" do
+        puts "yo"
         result = Auth::Operation::VerifyAccount.wtf?(verify_account_token: "0_safasdfafsaf")
         assert result.failure?
       end
+      #:verify-invalid-id end
 
-      it "fails with invaild token" do
+      #:verify-invalid-token
+      it "fails with invalid token" do
         result = Test::Auth::Operation::CreateAccount.wtf?(valid_create_options)
         assert result.success?
-
 
         result = Auth::Operation::VerifyAccount.wtf?(verify_account_token: result[:verify_account_token] + "rubbish")
         assert result.failure?
@@ -199,7 +209,9 @@ class Auth2Test < Minitest::Spec
         result = Auth::Operation::VerifyAccount.wtf?(verify_account_token: "")
         assert result.failure?
       end
+      #:verify-invalid-token end
 
+      #:verify-invalid-second
       it "fails second time" do
         result = Test::Auth::Operation::CreateAccount.wtf?(valid_create_options)
         assert result.success?
@@ -209,7 +221,7 @@ class Auth2Test < Minitest::Spec
         result = Auth::Operation::VerifyAccount.wtf?(verify_account_token: result[:verify_account_token])
         assert result.failure?
       end
-    #:verify-find end
+      #:verify-invalid-second end
     end
     puts output.gsub("Auth2Test::I::", "")
   end
