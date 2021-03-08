@@ -790,7 +790,7 @@ class AuthOperationTest < Minitest::Spec
           assert_equal 60, user.password.size
           assert_equal "created, please verify account", user.state
 
-          assert_match /#{user.id}_\w+/, result[:verify_account_token]
+          assert_match /#{user.id}_.+/, result[:verify_account_token]
 
           verify_account_token = VerifyAccountToken.where(user_id: user.id)[0]
           # token is something like "aJK1mzcc6adgGvcJq8rM_bkfHk9FTtjypD8x7RZOkDo"
