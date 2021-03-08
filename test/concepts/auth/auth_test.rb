@@ -1,6 +1,8 @@
 require "test_helper"
 
 class AuthOperationTest < Minitest::Spec
+  before { User.delete_all; VerifyAccountToken.delete_all }
+
   module A
     module Auth
     end
@@ -323,12 +325,12 @@ class AuthOperationTest < Minitest::Spec
     puts output.gsub("AuthOperationTest::D::", "")
   end
 
-# save account
-  module E
+# set state
+  module J
     module Auth
     end
 
-    #:op-save-account
+    #:op-set-state
     # app/concepts/auth/operation/create_account.rb
     require "bcrypt"
 
@@ -339,7 +341,7 @@ class AuthOperationTest < Minitest::Spec
         step :passwords_identical?
         fail :passwords_invalid_msg, fail_fast: true
         step :password_hash
-        step :save_account
+        step :state
 
         #~meth
         def check_email(ctx, email:, **)
@@ -361,8 +363,83 @@ class AuthOperationTest < Minitest::Spec
           ctx[:password_hash] = BCrypt::Password.create(password, cost: password_hash_cost)
         end
         #~meth end
-        def save_account(ctx, email:, password_hash:, **)
-          user = User.create(email: email, password: password_hash)
+        def state(ctx, **)
+          ctx[:state] = "created, please verify account"
+        end
+      end
+    end
+    #:op-set-state end
+  end
+
+
+  it "what" do
+    Auth = J::Auth
+
+    output = nil
+    output, _ = capture_io do
+      #:set-state
+      # test/concepts/auth/operation_test.rb
+      it "validates input, encrypts the password, and sets state" do
+        result = Auth::Operation::CreateAccount.wtf?(
+          {
+            email:            "yogi@trb.to",
+            password:         "1234",
+            password_confirm: "1234",
+          }
+        )
+
+        assert result.success?
+
+        assert_equal "created, please verify account", result[:state]
+      end
+      #:set-state end
+    end
+  end
+
+# save account
+  module E
+    module Auth
+    end
+
+    #:op-save-account
+    # app/concepts/auth/operation/create_account.rb
+    require "bcrypt"
+
+    module Auth::Operation
+      class CreateAccount < Trailblazer::Operation
+        step :check_email
+        fail :email_invalid_msg, fail_fast: true
+        step :passwords_identical?
+        fail :passwords_invalid_msg, fail_fast: true
+        step :password_hash
+        step :state
+        step :save_account
+
+        #~meth
+        def check_email(ctx, email:, **)
+          email =~ /\A[^,;@ \r\n]+@[^,@; \r\n]+\.[^,@; \r\n]+\z/
+        end
+
+        def passwords_identical?(ctx, password:, password_confirm:, **)
+          password == password_confirm
+        end
+
+        def email_invalid_msg(ctx, **)
+          ctx[:error] = "Email invalid."
+        end
+
+        def passwords_invalid_msg(ctx, **)
+          ctx[:error] = "Passwords do not match."
+        end
+        def password_hash(ctx, password:, password_hash_cost: BCrypt::Engine::MIN_COST, **) # stolen from Rodauth.
+          ctx[:password_hash] = BCrypt::Password.create(password, cost: password_hash_cost)
+        end
+        def state(ctx, **)
+          ctx[:state] = "created, please verify account"
+        end
+        #~meth end
+        def save_account(ctx, email:, password_hash:, state:, **)
+          user = User.create(email: email, password: password_hash, state: state)
           ctx[:user] = user
         end
       end
@@ -393,6 +470,7 @@ class AuthOperationTest < Minitest::Spec
         assert user.persisted?
         assert_equal "yogi@trb.to", user.email
         assert_equal 60, user.password.size
+        assert_equal "created, please verify account", user.state
       end
       #:save-account end
 
@@ -431,9 +509,9 @@ class AuthOperationTest < Minitest::Spec
         # ...
 
         #:save-account-def
-        def save_account(ctx, email:, password_hash:, **)
+        def save_account(ctx, email:, password_hash:, state:, **)
           begin
-            user = User.create(email: email, password: password_hash)
+            user = User.create(email: email, password: password_hash, state: state)
           rescue ActiveRecord::RecordNotUnique
             ctx[:error] = "Email #{email} is already taken."
             return false
@@ -489,6 +567,7 @@ class AuthOperationTest < Minitest::Spec
         step :passwords_identical?
         fail :passwords_invalid_msg, fail_fast: true
         step :password_hash
+        step :state
         step :save_account
         step :generate_verify_account_token
         step :save_verify_account_token
@@ -513,14 +592,13 @@ class AuthOperationTest < Minitest::Spec
           ctx[:password_hash] = BCrypt::Password.create(password, cost: password_hash_cost)
         end
 
-        def save_account(ctx, email:, password_hash:, **)
-          user = User.create(email: email, password: password_hash)
-          ctx[:user] = user
+        def state(ctx, **)
+          ctx[:state] = "created, please verify account"
         end
 
-        def save_account(ctx, email:, password_hash:, **)
+        def save_account(ctx, email:, password_hash:, state:, **)
           begin
-            user = User.create(email: email, password: password_hash)
+            user = User.create(email: email, password: password_hash, state: state)
           rescue ActiveRecord::RecordNotUnique
             ctx[:error] = "Email #{email} is already taken."
             return false
@@ -568,6 +646,7 @@ class AuthOperationTest < Minitest::Spec
         assert user.persisted?
         assert_equal "yogi@trb.to", user.email
         assert_equal 60, user.password.size
+        assert_equal "created, please verify account", user.state
 
         verify_account_token = VerifyAccountToken.where(user_id: user.id)[0]
         # token is something like "aJK1mzcc6adgGvcJq8rM_bkfHk9FTtjypD8x7RZOkDo"
@@ -619,6 +698,7 @@ class AuthOperationTest < Minitest::Spec
         step :passwords_identical?
         fail :passwords_invalid_msg, fail_fast: true
         step :password_hash
+        step :state
         step :save_account
         step :generate_verify_account_token
         step :save_verify_account_token
@@ -643,15 +723,13 @@ class AuthOperationTest < Minitest::Spec
         def password_hash(ctx, password:, password_hash_cost: BCrypt::Engine::MIN_COST, **) # stolen from Rodauth.
           ctx[:password_hash] = BCrypt::Password.create(password, cost: password_hash_cost)
         end
-
-        def save_account(ctx, email:, password_hash:, **)
-          user = User.create(email: email, password: password_hash)
-          ctx[:user] = user
+        def state(ctx, **)
+          ctx[:state] = "created, please verify account"
         end
 
-        def save_account(ctx, email:, password_hash:, **)
+        def save_account(ctx, email:, password_hash:, state:, **)
           begin
-            user = User.create(email: email, password: password_hash)
+            user = User.create(email: email, password: password_hash, state: state)
           rescue ActiveRecord::RecordNotUnique
             ctx[:error] = "Email #{email} is already taken."
             return false
@@ -708,6 +786,7 @@ include ActionMailer::TestHelper
           assert user.persisted?
           assert_equal "yogi@trb.to", user.email
           assert_equal 60, user.password.size
+          assert_equal "created, please verify account", user.state
 
           verify_account_token = VerifyAccountToken.where(user_id: user.id)[0]
           # token is something like "aJK1mzcc6adgGvcJq8rM_bkfHk9FTtjypD8x7RZOkDo"
@@ -720,4 +799,122 @@ include ActionMailer::TestHelper
     end
     puts output.gsub("AuthOperationTest::H::", "")
   end
+
+# verify account / find account
+  module I
+    module Auth
+    end
+
+    #:op-verify-find
+    # app/concepts/auth/operation/create_account.rb
+    require "bcrypt"
+
+    module Auth::Operation
+      class CreateAccount < Trailblazer::Operation
+        step :check_email
+        fail :email_invalid_msg, fail_fast: true
+        step :passwords_identical?
+        fail :passwords_invalid_msg, fail_fast: true
+        step :password_hash
+        step :save_account
+        step :generate_verify_account_token
+        step :save_verify_account_token
+        step :send_verify_account_email
+
+        #~meth
+        def check_email(ctx, email:, **)
+          email =~ /\A[^,;@ \r\n]+@[^,@; \r\n]+\.[^,@; \r\n]+\z/
+        end
+
+        def passwords_identical?(ctx, password:, password_confirm:, **)
+          password == password_confirm
+        end
+
+        def email_invalid_msg(ctx, **)
+          ctx[:error] = "Email invalid."
+        end
+
+        def passwords_invalid_msg(ctx, **)
+          ctx[:error] = "Passwords do not match."
+        end
+        def password_hash(ctx, password:, password_hash_cost: BCrypt::Engine::MIN_COST, **) # stolen from Rodauth.
+          ctx[:password_hash] = BCrypt::Password.create(password, cost: password_hash_cost)
+        end
+
+        def state(ctx, **)
+          ctx[:state] = "created, please verify account"
+        end
+
+        def save_account(ctx, email:, password_hash:, state:, **)
+          begin
+            user = User.create(email: email, password: password_hash, state: state)
+          rescue ActiveRecord::RecordNotUnique
+            ctx[:error] = "Email #{email} is already taken."
+            return false
+          end
+
+          ctx[:user] = user
+        end
+        def generate_verify_account_token(ctx, secure_random: SecureRandom, **)
+          ctx[:verify_account_token] = secure_random.urlsafe_base64(32)
+        end
+
+        def save_verify_account_token(ctx, verify_account_token:, user:, **)
+          begin
+            VerifyAccountToken.create(user_id: user.id, token: verify_account_token)
+          rescue ActiveRecord::RecordNotUnique
+            ctx[:error] = "Please try again."
+            return false
+          end
+        end
+        #~meth end
+
+        def send_verify_account_email(ctx, verify_account_token:, user:, **)
+          token_path = "#{user.id}_#{verify_account_token}" # stolen from Rodauth.
+
+          ctx[:email] = AuthMailer.with(email: user.email, verify_token: token_path).welcome_email.deliver_now
+        end
+      end
+    end
+    #:op-verify-find end
+  end
+
+  it "what" do
+    Auth = H::Auth
+
+    output = nil
+    output, _ = capture_io do
+      assert_emails 1 do
+        #:verify-find
+        # test/concepts/auth/operation_test.rb
+        it "validates input, encrypts the password, saves user,
+              creates a verify-account token and send a welcome email" do
+          result = Auth::Operation::CreateAccount.wtf?(
+            {
+              email:            "yogi@trb.to",
+              password:         "1234",
+              password_confirm: "1234",
+            }
+          )
+
+          assert result.success?
+
+          user = result[:user]
+          assert user.persisted?
+          assert_equal "yogi@trb.to", user.email
+          assert_equal 60, user.password.size
+          assert_equal "created, please verify account", user.state
+
+          verify_account_token = VerifyAccountToken.where(user_id: user.id)[0]
+          # token is something like "aJK1mzcc6adgGvcJq8rM_bkfHk9FTtjypD8x7RZOkDo"
+          assert_equal 43, verify_account_token.token.size
+
+          assert_match /\/auth\/verify_account\/#{user.id}_#{verify_account_token.token}/, result[:email].body.to_s
+        end
+      end
+      #:verify-find end
+    end
+    puts output.gsub("AuthOperationTest::H::", "")
+  end
+
 end
