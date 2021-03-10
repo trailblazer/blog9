@@ -291,6 +291,7 @@ class Auth2Test < Minitest::Spec
 
     output = nil
     output, _ = capture_io do
+      #:reset-email
       it "fails with unknown email" do
         result = Auth::Operation::ResetPassword.wtf?(
           {
@@ -300,6 +301,7 @@ class Auth2Test < Minitest::Spec
 
         assert result.failure?
       end
+      #:reset-email end
 
       assert_emails 2 do
         #:reset
@@ -319,7 +321,6 @@ class Auth2Test < Minitest::Spec
           assert result.success?
 
           user = result[:user]
-          assert user.persisted?
           assert_equal "yogi@trb.to", user.email
           assert_nil user.password                                  # password reset!
           assert_equal "password reset, please change password", user.state
@@ -336,10 +337,12 @@ class Auth2Test < Minitest::Spec
 
       end
     end
+    puts output.gsub("Auth2Test::J::", "")
   end
 
 # reset password, refactored.
   module K
+    #:create-token
     module Auth
       module Activity
         class CreateToken < Trailblazer::Operation
@@ -361,6 +364,7 @@ class Auth2Test < Minitest::Spec
         end # CreateToken
       end
     end
+    #:create-token end
 
     #:op-reset-sub
     module Auth::Operation
@@ -409,6 +413,21 @@ class Auth2Test < Minitest::Spec
           input:  ->(ctx, user:, **) { {token_model_class: VerifyAccountToken, user: user} },
           output: {token: :verify_account_token}
       end
+
+=begin
+      #:op-create
+      module Auth::Operation
+        class CreateAccount < Trailblazer::Operation
+          # ...
+          step :save_account
+          step Subprocess(Auth::Activity::CreateToken),
+            input:  ->(ctx, user:, **) { {token_model_class: VerifyAccountToken, user: user} },
+            output: {token: :verify_account_token}
+          # ...
+        end
+      end
+      #:op-create end
+=end
     end
   end
 
