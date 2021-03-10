@@ -79,8 +79,10 @@ module Test::Auth::Operation
 end
 
 class Auth2Test < Minitest::Spec
+  include ActionMailer::TestHelper
+
   def it(*)
-    User.delete_all; VerifyAccountToken.delete_all # FIXME!!!!!!!!!!!!!!!!1one
+    User.delete_all; VerifyAccountToken.delete_all; ResetPasswordToken.delete_all; # FIXME!!!!!!!!!!!!!!!!1one
 
     yield
   end
@@ -226,4 +228,231 @@ class Auth2Test < Minitest::Spec
     puts output.gsub("Auth2Test::I::", "")
   end
 
+# reset password
+  module J
+    module Auth; end
+
+    #:op-reset
+    module Auth::Operation
+      class ResetPassword < Trailblazer::Operation
+        step :find_user
+        pass :reset_password
+        step :state
+        step :save_user
+        step :generate_verify_account_token
+        step :save_verify_account_token
+        step :send_verify_account_email
+
+        def find_user(ctx, email:, **)
+          ctx[:user] = User.find_by(email: email)
+        end
+
+        def reset_password(ctx, user:, **)
+          user.password = nil
+        end
+
+        def state(ctx, user:, **)
+          user.state = "password reset, please change password"
+        end
+
+        def save_user(ctx, user:, **)
+          user.save
+        end
+
+        # FIXME: copied from CreateAccount!!!
+        def generate_verify_account_token(ctx, secure_random: SecureRandom, **)
+          ctx[:verify_account_token] = secure_random.urlsafe_base64(32)
+        end
+
+        # FIXME: almost copied from CreateAccount!!!
+        def save_verify_account_token(ctx, verify_account_token:, user:, **)
+          begin
+            ResetPasswordToken.create(user_id: user.id, token: verify_account_token) # VerifyAccountToken => ResetPasswordToken
+          rescue ActiveRecord::RecordNotUnique
+            ctx[:error] = "Please try again."
+            return false
+          end
+        end
+
+        def send_verify_account_email(ctx, verify_account_token:, user:, **)
+          token_path = "#{user.id}_#{verify_account_token}" # stolen from Rodauth.
+
+          ctx[:verify_account_token] = token_path
+
+          ctx[:email] = AuthMailer.with(email: user.email, reset_password_token: token_path).reset_password_email.deliver_now
+        end
+      end
+    #:op-reset end
+    end
+  end
+
+  it "what" do
+    Auth = J::Auth
+
+    output = nil
+    output, _ = capture_io do
+      it "fails with unknown email" do
+        result = Auth::Operation::ResetPassword.wtf?(
+          {
+            email:            "i_do_not_exist@trb.to",
+          }
+        )
+
+        assert result.failure?
+      end
+
+      assert_emails 2 do
+        #:reset
+        # test/concepts/auth/operation_test.rb
+        it "resets password and sends a reset-password email" do
+          # test setup aka "factories":
+          result = Test::Auth::Operation::CreateAccount.wtf?(valid_create_options)
+          result = I::Auth::Operation::VerifyAccount.wtf?(verify_account_token: result[:verify_account_token])
+
+          # the actual test.
+          result = Auth::Operation::ResetPassword.wtf?(
+            {
+              email:            "yogi@trb.to",
+            }
+          )
+
+          assert result.success?
+
+          user = result[:user]
+          assert user.persisted?
+          assert_equal "yogi@trb.to", user.email
+          assert_nil user.password                                  # password reset!
+          assert_equal "password reset, please change password", user.state
+
+          assert_match /#{user.id}_.+/, result[:verify_account_token]
+
+          reset_password_token = ResetPasswordToken.where(user_id: user.id)[0]
+          # token is something like "aJK1mzcc6adgGvcJq8rM_bkfHk9FTtjypD8x7RZOkDo"
+          assert_equal 43, reset_password_token.token.size
+
+          assert_match /\/auth\/reset_password\/#{user.id}_#{reset_password_token.token}/, result[:email].body.to_s
+        end
+        #:reset end
+
+      end
+    end
+  end
+
+# reset password, refactored.
+  module K
+    module Auth
+      module Activity
+        class CreateToken < Trailblazer::Operation
+          step :generate_token
+          step :save_token
+
+          def generate_token(ctx, secure_random: SecureRandom, **)
+            ctx[:token] = secure_random.urlsafe_base64(32)
+          end
+
+          def save_token(ctx, token:, user:, token_model_class:, **)
+            begin
+              token_model_class.create(user_id: user.id, token: token) # token_model_class = VerifyAccountToken or ResetPasswordToken
+            rescue ActiveRecord::RecordNotUnique
+              ctx[:error] = "Please try again."
+              return false
+            end
+          end
+        end # CreateToken
+      end
+    end
+
+    #:op-reset-sub
+    module Auth::Operation
+      class ResetPassword < Trailblazer::Operation
+        step :find_user
+        pass :reset_password
+        step :state
+        step :save_user
+        step Subprocess(Auth::Activity::CreateToken),
+          input:  ->(ctx, user:, **) { {token_model_class: ResetPasswordToken, user: user} },
+          output: {token: :reset_password_token}
+        step :send_verify_account_email
+
+        def find_user(ctx, email:, **)
+          ctx[:user] = User.find_by(email: email)
+        end
+
+        def reset_password(ctx, user:, **)
+          user.password = nil
+        end
+
+        def state(ctx, user:, **)
+          user.state = "password reset, please change password"
+        end
+
+        def save_user(ctx, user:, **)
+          user.save
+        end
+
+        def send_verify_account_email(ctx, reset_password_token:, user:, **)
+          token_path = "#{user.id}_#{reset_password_token}" # stolen from Rodauth.
+
+          ctx[:reset_password_token] = token_path
+
+          ctx[:email] = AuthMailer.with(email: user.email, reset_password_token: token_path).reset_password_email.deliver_now
+        end
+      end
+    end
+    #:op-reset-sub end
+
+    module Auth::Operation
+      class CreateAccount < Test::Auth::Operation::CreateAccount
+        step nil, delete: :generate_verify_account_token
+        step nil, delete: :save_verify_account_token
+        step Subprocess(Auth::Activity::CreateToken), after: :save_account,
+          input:  ->(ctx, user:, **) { {token_model_class: VerifyAccountToken, user: user} },
+          output: {token: :verify_account_token}
+      end
+    end
+  end
+
+  it "what" do
+    Auth = K::Auth
+
+    output = nil
+    output, _ = capture_io do
+
+        #:reset-sub
+        # test/concepts/auth/operation_test.rb
+        it "resets password and sends a reset-password email" do
+          # test setup aka "factories":
+          result = Auth::Operation::CreateAccount.wtf?(valid_create_options)
+          result = I::Auth::Operation::VerifyAccount.wtf?(verify_account_token: result[:verify_account_token])
+
+          assert_emails 1 do
+            # the actual test.
+            result = Auth::Operation::ResetPassword.wtf?(
+              {
+                email:            "yogi@trb.to",
+              }
+            )
+
+            assert result.success?
+
+            user = result[:user]
+            assert user.persisted?
+            assert_equal "yogi@trb.to", user.email
+            assert_nil user.password                                  # password reset!
+            assert_equal "password reset, please change password", user.state
+
+            assert_match /#{user.id}_.+/, result[:reset_password_token]
+
+            reset_password_token = ResetPasswordToken.where(user_id: user.id)[0]
+            # token is something like "aJK1mzcc6adgGvcJq8rM_bkfHk9FTtjypD8x7RZOkDo"
+            assert_equal 43, reset_password_token.token.size
+
+            assert_match /\/auth\/reset_password\/#{user.id}_#{reset_password_token.token}/, result[:email].body.to_s
+          end
+        #:reset-sub end
+
+      end
+    end
+    puts output.gsub("Auth2Test::K::", "")
+  end
 end

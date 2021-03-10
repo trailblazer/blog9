@@ -8,4 +8,10 @@ class AuthMailer < ApplicationMailer
     @url  = 'http://example.com/login'
     mail(to: @email, subject: 'Welcome to My Awesome Site')
   end
+
+  def reset_password_email
+    @email                = params[:email]
+    @reset_password_token = params[:reset_password_token]
+    mail(to: @email, subject: 'Please change your password')
+  end
 end
