@@ -484,7 +484,7 @@ class Auth2Test < Minitest::Spec
     #:op-compare-keys
     module Auth::Activity
       # Find user and key row by `:token`, and compare safely.
-      class CompareKeys < Trailblazer::Operation
+      class CheckToken < Trailblazer::Operation
         step :extract_from_token
         step :find_key
         step :find_user
@@ -512,20 +512,45 @@ class Auth2Test < Minitest::Spec
         private def key_model_class
           raise "implement me"
         end
-      end # CompareKeys
+      end # CheckToken
     end
     #:op-compare-keys end
 
+
+    #:op-check-passwords
+    module Auth::Activity
+      # Check if both {:password} and {:password_confirm} are identical.
+      class ProcessPasswords < Trailblazer::Operation
+        step :passwords_identical?
+        fail :passwords_invalid_msg, fail_fast: true
+        step :password_hash
+
+        def passwords_identical?(ctx, password:, password_confirm:, **)
+          password == password_confirm
+        end
+
+        def passwords_invalid_msg(ctx, **)
+          ctx[:error] = "Passwords do not match."
+        end
+
+        def password_hash(ctx, password:, password_hash_cost: BCrypt::Engine::MIN_COST, **) # stolen from Rodauth.
+          ctx[:password_hash] = BCrypt::Password.create(password, cost: password_hash_cost)
+        end
+      end
+    end
+    #:op-check-passwords end
+
+    #:op-verify-sub
     # app/concepts/auth/operation/verify_account.rb
     module Auth::Operation
-      class UpdatePassword < Trailblazer::Operation
-        class CompareKeys < Auth::Activity::CompareKeys
+      class VerifyAccount < Trailblazer::Operation
+        class CheckToken < Auth::Activity::CheckToken
           private def key_model_class
-            ResetPasswordToken
+            VerifyAccountToken
           end
         end
 
-        step Subprocess(CompareKeys)
+        step Subprocess(CheckToken)
         step :state # DISCUSS: move outside?
         step :save  # DISCUSS: move outside?
         step :expire_verify_account_token
@@ -538,8 +563,101 @@ class Auth2Test < Minitest::Spec
           user.save
         end
 
-        def expire_verify_account_token(ctx, verify_account_key:, **)
-          verify_account_key.delete
+        def expire_verify_account_token(ctx, key:, **)
+          key.delete
+        end
+      end
+    end
+    #:op-verify-sub end
+
+    #:op-verify-sub
+    # app/concepts/auth/operation/create_account.rb
+    module Auth::Operation
+      class CreateAccount < Trailblazer::Operation
+        step :check_email
+        fail :email_invalid_msg, fail_fast: true
+        step Subprocess(Auth::Activity::ProcessPasswords) # provides {:password_hash}
+        step :state
+        step :save_account
+        step :generate_verify_account_token
+        step :save_verify_account_token
+        step :send_verify_account_email
+
+        #~meth
+        def check_email(ctx, email:, **)
+          email =~ /\A[^,;@ \r\n]+@[^,@; \r\n]+\.[^,@; \r\n]+\z/
+        end
+
+        def email_invalid_msg(ctx, **)
+          ctx[:error] = "Email invalid."
+        end
+
+        def state(ctx, **)
+          ctx[:state] = "created, please verify account"
+        end
+
+        def save_account(ctx, email:, password_hash:, state:, **)
+          begin
+            user = User.create(email: email, password: password_hash, state: state)
+          rescue ActiveRecord::RecordNotUnique
+            ctx[:error] = "Email #{email} is already taken."
+            return false
+          end
+
+          ctx[:user] = user
+        end
+        def generate_verify_account_token(ctx, secure_random: SecureRandom, **)
+          ctx[:verify_account_token] = secure_random.urlsafe_base64(32)
+        end
+
+        def save_verify_account_token(ctx, verify_account_token:, user:, **)
+          begin
+            VerifyAccountToken.create(user_id: user.id, token: verify_account_token)
+          rescue ActiveRecord::RecordNotUnique
+            ctx[:error] = "Please try again."
+            return false
+          end
+        end
+        #~meth end
+
+        def send_verify_account_email(ctx, verify_account_token:, user:, **)
+          token_path = "#{user.id}_#{verify_account_token}" # stolen from Rodauth.
+
+          ctx[:verify_account_token] = token_path
+
+          ctx[:email] = AuthMailer.with(email: user.email, verify_token: token_path).welcome_email.deliver_now
+        end
+      end
+    end
+    #:op-verify-sub end
+
+    module Auth::Operation
+      class UpdatePassword < Trailblazer::Operation
+        class CheckToken < Auth::Activity::CheckToken
+          private def key_model_class
+            ResetPasswordToken
+          end
+        end
+
+        step Subprocess(CheckToken)                       # provides {:user}
+        step Subprocess(Auth::Activity::ProcessPasswords) # provides {:password_hash}
+        step :state
+        step :update_user
+        step :expire_reset_password_key
+
+        def state(ctx, **)
+          ctx[:state] = "ready to login"
+        end
+
+        def update_user(ctx, user:, password_hash:, state:, **)
+          user.update_attributes(
+            password: password_hash,
+            state: state
+          )
+        end
+
+        def expire_reset_password_key(ctx, key:, **)
+          key.delete
         end
       end
     end
@@ -548,6 +666,7 @@ class Auth2Test < Minitest::Spec
   it "what" do
     Auth = L::Auth
 
+  # UpdatePassword::CheckToken
     output = nil
     output, _ = capture_io do
 
@@ -556,14 +675,14 @@ class Auth2Test < Minitest::Spec
       it "finds user by reset-password token and compares keys" do
         # test setup aka "factories", we don't have to use `wtf?` every time.
         result = K::Auth::Operation::CreateAccount.(valid_create_options)
-        result = I::Auth::Operation::VerifyAccount.(verify_account_token: result[:verify_account_token])
+        result = L::Auth::Operation::VerifyAccount.(token: result[:verify_account_token])
         result = K::Auth::Operation::ResetPassword.(email: "yogi@trb.to")
         token  = result[:reset_password_token]
 
-        result = Auth::Operation::UpdatePassword::CompareKeys.wtf?(token: token)
+        result = Auth::Operation::UpdatePassword::CheckToken.wtf?(token: token)
         assert result.success?
 
-        original_key = result[:key] # note how you can read variables written in CompareKeys if you don't use {:output}.
+        original_key = result[:key] # note how you can read variables written in CheckToken if you don't use {:output}.
 
         user = result[:user]
         assert user.persisted?
@@ -580,13 +699,51 @@ class Auth2Test < Minitest::Spec
 
       it "fails with wrong token" do
         result = K::Auth::Operation::CreateAccount.(valid_create_options)
-        result = I::Auth::Operation::VerifyAccount.(verify_account_token: result[:verify_account_token])
+        result = L::Auth::Operation::VerifyAccount.(token: result[:verify_account_token])
         result = K::Auth::Operation::ResetPassword.(email: "yogi@trb.to")
         token  = result[:reset_password_token]
 
-        result = Auth::Operation::UpdatePassword::CompareKeys.wtf?(token: token + "rubbish")
+        result = Auth::Operation::UpdatePassword::CheckToken.wtf?(token: token + "rubbish")
         assert result.failure?
       end
+    end
+    puts output.gsub("Auth2Test::L::", "")
+
+  # UpdatePassword
+    output = nil
+    output, _ = capture_io do
+
+      #:update
+      # test/concepts/auth/operation_test.rb
+      it "finds user by reset-password token and updates password" do
+        result = K::Auth::Operation::CreateAccount.(valid_create_options)
+        result = L::Auth::Operation::VerifyAccount.(token: result[:verify_account_token])
+        result = K::Auth::Operation::ResetPassword.(email: "yogi@trb.to")
+        token  = result[:reset_password_token]
+
+        result = Auth::Operation::UpdatePassword.wtf?(token: token, password: "12345678", password_confirm: "12345678")
+        assert result.success?
+
+        user = result[:user]
+        assert user.persisted?
+        assert_equal "yogi@trb.to", user.email
+        assert_equal 60, user.password.size
+        assert_equal "ready to login", user.state
+
+        # key is expired:
+        assert_nil ResetPasswordToken.where(user_id: user.id)[0]
+      end
+      #:update end
+
+      # it "fails with wrong token" do
+      #   result = K::Auth::Operation::CreateAccount.(valid_create_options)
+      #   result = L::Auth::Operation::VerifyAccount.(token: result[:verify_account_token])
+      #   result = K::Auth::Operation::ResetPassword.(email: "yogi@trb.to")
+      #   token  = result[:reset_password_token]
+
+      #   result = Auth::Operation::UpdatePassword::CheckToken.wtf?(token: token + "rubbish")
+      #   assert result.failure?
+      # end
     end
     puts output.gsub("Auth2Test::L::", "")
   end
