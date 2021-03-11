@@ -669,6 +669,25 @@ class Auth2Test < Minitest::Spec
       end
     end
     #:op-update end
+
+    #:op-login
+    module Auth::Operation
+      class Login < Trailblazer::Operation
+        step :find_user
+        step :password_hash_match?
+
+        def find_user(ctx, email:, **) # TODO: redundant with VerifyAccount#find_user.
+          ctx[:user] = User.find_by(email: email)
+        end
+
+        def password_hash_match?(ctx, user:, password:, **)
+          BCrypt::Password.new(user.password) == password # stolen from Rodauth.
+        end
+
+        # You could add more login logic here, like logging log-in, logging failed attempt, and such.
+      end
+    end
+    #:op-login end
   end
 
   it "what" do
@@ -764,5 +783,30 @@ class Auth2Test < Minitest::Spec
       #:update-fail end
     end
     puts output.gsub("Auth2Test::L::", "")
+
+  # Login
+    #:login
+    it "is successful with existing, active account" do
+      result = K::Auth::Operation::CreateAccount.(valid_create_options)
+      result = L::Auth::Operation::VerifyAccount.(token: result[:verify_account_token])
+      result = K::Auth::Operation::ResetPassword.(email: "yogi@trb.to")
+      token  = result[:reset_password_token]
+      result = Auth::Operation::UpdatePassword.(token: token, password: "12345678", password_confirm: "12345678")
+
+      result = Auth::Operation::Login.wtf?(email: "yogi@trb.to", password: "12345678")
+      assert result.success?
+
+    # fails with wrong password
+      result = Auth::Operation::Login.wtf?(email: "yogi@trb.to", password: "abcd")
+      assert result.failure?
+    end
+    #:login end
+
+    #:login-fail
+    it "fails with unknown email" do
+      result = Auth::Operation::Login.wtf?(email: "yogi@trb.to", password: "abcd")
+      assert result.failure?
+    end
+    #:login-fail end
   end
 end
