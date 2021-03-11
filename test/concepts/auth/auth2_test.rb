@@ -115,7 +115,7 @@ class Auth2Test < Minitest::Spec
     module Auth::Operation
       class VerifyAccount < Trailblazer::Operation
         step :extract_from_token
-        step :find_verify_account_key
+        step :find_verify_account_token
         step :find_user
         step :compare_keys
         step :state # DISCUSS: move outside?
@@ -129,7 +129,7 @@ class Auth2Test < Minitest::Spec
           ctx[:key] = key # returns false if we don't have a key.
         end
 
-        def find_verify_account_key(ctx, id:, **)
+        def find_verify_account_token(ctx, id:, **)
           ctx[:verify_account_key] = VerifyAccountToken.where(user_id: id)[0]
         end
 
@@ -473,5 +473,121 @@ class Auth2Test < Minitest::Spec
       end
     end
     puts output.gsub("Auth2Test::K::", "")
+  end
+
+# reset password, find user.
+  module L
+    module Auth;
+      TokenUtils = Auth2Test::I::Auth::TokenUtils
+    end
+
+    #:op-compare-keys
+    module Auth::Activity
+      # Find user and key row by `:token`, and compare safely.
+      class CompareKeys < Trailblazer::Operation
+        step :extract_from_token
+        step :find_key
+        step :find_user
+        step :compare_keys
+
+        def extract_from_token(ctx, token:, **)
+          id, key = Auth::TokenUtils.split_token(token)
+
+          ctx[:id]  = id
+          ctx[:input_key] = key # returns false if we don't have a key.
+        end
+
+        def find_key(ctx, id:, **)
+          ctx[:key] = key_model_class.where(user_id: id)[0]
+        end
+
+        def find_user(ctx, id:, **) # DISCUSS: might get moved outside.
+          ctx[:user] = User.find_by(id: id)
+        end
+
+        def compare_keys(ctx, input_key:, key:, **)
+          Auth::TokenUtils.timing_safe_eql?(input_key, key.token) # a hack-proof == comparison.
+        end
+
+        private def key_model_class
+          raise "implement me"
+        end
+      end # CompareKeys
+    end
+    #:op-compare-keys end
+
+    # app/concepts/auth/operation/verify_account.rb
+    module Auth::Operation
+      class UpdatePassword < Trailblazer::Operation
+        class CompareKeys < Auth::Activity::CompareKeys
+          private def key_model_class
+            ResetPasswordToken
+          end
+        end
+
+        step Subprocess(CompareKeys)
+        step :state # DISCUSS: move outside?
+        step :save  # DISCUSS: move outside?
+        step :expire_verify_account_token
+
+        def state(ctx, user:, **)
+          user.state = "ready to login"
+        end
+
+        def save(ctx, user:, **)
+          user.save
+        end
+
+        def expire_verify_account_token(ctx, verify_account_key:, **)
+          verify_account_key.delete
+        end
+      end
+    end
+  end
+
+  it "what" do
+    Auth = L::Auth
+
+    output = nil
+    output, _ = capture_io do
+
+      #:reset-compare-keys
+      # test/concepts/auth/operation_test.rb
+      it "finds user by reset-password token and compares keys" do
+        # test setup aka "factories", we don't have to use `wtf?` every time.
+        result = K::Auth::Operation::CreateAccount.(valid_create_options)
+        result = I::Auth::Operation::VerifyAccount.(verify_account_token: result[:verify_account_token])
+        result = K::Auth::Operation::ResetPassword.(email: "yogi@trb.to")
+        token  = result[:reset_password_token]
+
+        result = Auth::Operation::UpdatePassword::CompareKeys.wtf?(token: token)
+        assert result.success?
+
+        original_key = result[:key] # note how you can read variables written in CompareKeys if you don't use {:output}.
+
+        user = result[:user]
+        assert user.persisted?
+        assert_equal "yogi@trb.to", user.email
+        assert_nil user.password                                  # password reset!
+        assert_equal "password reset, please change password", user.state
+
+        # key is still in database:
+        reset_password_key = ResetPasswordToken.where(user_id: user.id)[0]
+        # key hasn't changed:
+        assert_equal original_key, reset_password_key
+      end
+      #:reset-compare-keys end
+
+      it "fails with wrong token" do
+        result = K::Auth::Operation::CreateAccount.(valid_create_options)
+        result = I::Auth::Operation::VerifyAccount.(verify_account_token: result[:verify_account_token])
+        result = K::Auth::Operation::ResetPassword.(email: "yogi@trb.to")
+        token  = result[:reset_password_token]
+
+        result = Auth::Operation::UpdatePassword::CompareKeys.wtf?(token: token + "rubbish")
+        assert result.failure?
+      end
+    end
+    puts output.gsub("Auth2Test::L::", "")
   end
 end
