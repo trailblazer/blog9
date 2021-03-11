@@ -481,9 +481,9 @@ class Auth2Test < Minitest::Spec
       TokenUtils = Auth2Test::I::Auth::TokenUtils
     end
 
-    #:op-compare-keys
+    #:op-check-token
     module Auth::Activity
-      # Find user and key row by `:token`, and compare safely.
+      # Splits token, finds user and key row by {:token}, and compares safely.
       class CheckToken < Trailblazer::Operation
         step :extract_from_token
         step :find_key
@@ -514,12 +514,13 @@ class Auth2Test < Minitest::Spec
         end
       end # CheckToken
     end
-    #:op-compare-keys end
+    #:op-check-token end
 
 
-    #:op-check-passwords
+    #:op-process-passwords
     module Auth::Activity
       # Check if both {:password} and {:password_confirm} are identical.
+      # Then, hash the password.
       class ProcessPasswords < Trailblazer::Operation
         step :passwords_identical?
         fail :passwords_invalid_msg, fail_fast: true
@@ -538,7 +539,7 @@ class Auth2Test < Minitest::Spec
         end
       end
     end
-    #:op-check-passwords end
+    #:op-process-passwords end
 
     #:op-verify-sub
     # app/concepts/auth/operation/verify_account.rb
@@ -631,14 +632,17 @@ class Auth2Test < Minitest::Spec
     end
     #:op-verify-sub end
 
+    #:op-update
     module Auth::Operation
       class UpdatePassword < Trailblazer::Operation
+        #~check
         class CheckToken < Auth::Activity::CheckToken
           private def key_model_class
             ResetPasswordToken
           end
         end
-
+        #~check end
+        #~meth
         step Subprocess(CheckToken)                       # provides {:user}
         step Subprocess(Auth::Activity::ProcessPasswords) # provides {:password_hash}
         step :state
@@ -659,8 +663,10 @@ class Auth2Test < Minitest::Spec
         def expire_reset_password_key(ctx, key:, **)
           key.delete
         end
+        #~meth
       end
     end
+    #:op-update end
   end
 
   it "what" do
@@ -697,6 +703,7 @@ class Auth2Test < Minitest::Spec
       end
       #:reset-compare-keys end
 
+      #:reset-check-fail
       it "fails with wrong token" do
         result = K::Auth::Operation::CreateAccount.(valid_create_options)
         result = L::Auth::Operation::VerifyAccount.(token: result[:verify_account_token])
@@ -706,6 +713,7 @@ class Auth2Test < Minitest::Spec
         result = Auth::Operation::UpdatePassword::CheckToken.wtf?(token: token + "rubbish")
         assert result.failure?
       end
+      #:reset-check-fail end
     end
     puts output.gsub("Auth2Test::L::", "")
 
