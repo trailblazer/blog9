@@ -555,7 +555,7 @@ class Auth2Test < Minitest::Spec
         step :state # DISCUSS: move outside?
         step :save  # DISCUSS: move outside?
         step :expire_verify_account_token
-
+        #~meth
         def state(ctx, user:, **)
           user.state = "ready to login"
         end
@@ -563,6 +563,7 @@ class Auth2Test < Minitest::Spec
         def save(ctx, user:, **)
           user.save
         end
+        #~meth end
 
         def expire_verify_account_token(ctx, key:, **)
           key.delete
@@ -571,7 +572,7 @@ class Auth2Test < Minitest::Spec
     end
     #:op-verify-sub end
 
-    #:op-verify-sub
+    #:op-create-sub
     # app/concepts/auth/operation/create_account.rb
     module Auth::Operation
       class CreateAccount < Trailblazer::Operation
@@ -619,7 +620,6 @@ class Auth2Test < Minitest::Spec
             return false
           end
         end
-        #~meth end
 
         def send_verify_account_email(ctx, verify_account_token:, user:, **)
           token_path = "#{user.id}_#{verify_account_token}" # stolen from Rodauth.
@@ -628,9 +628,10 @@ class Auth2Test < Minitest::Spec
 
           ctx[:email] = AuthMailer.with(email: user.email, verify_token: token_path).welcome_email.deliver_now
         end
+        #~meth end
       end
     end
-    #:op-verify-sub end
+    #:op-create-sub end
 
     #:op-update
     module Auth::Operation
@@ -644,7 +645,8 @@ class Auth2Test < Minitest::Spec
         #~check end
         #~meth
         step Subprocess(CheckToken)                       # provides {:user}
-        step Subprocess(Auth::Activity::ProcessPasswords) # provides {:password_hash}
+        step Subprocess(Auth::Activity::ProcessPasswords), # provides {:password_hash}
+          fail_fast: true
         step :state
         step :update_user
         step :expire_reset_password_key
@@ -723,7 +725,7 @@ class Auth2Test < Minitest::Spec
 
       #:update
       # test/concepts/auth/operation_test.rb
-      it "finds user by reset-password token and updates password" do
+      it "finds user by reset_password_token and updates password" do
         result = K::Auth::Operation::CreateAccount.(valid_create_options)
         result = L::Auth::Operation::VerifyAccount.(token: result[:verify_account_token])
         result = K::Auth::Operation::ResetPassword.(email: "yogi@trb.to")
@@ -743,15 +745,23 @@ class Auth2Test < Minitest::Spec
       end
       #:update end
 
-      # it "fails with wrong token" do
-      #   result = K::Auth::Operation::CreateAccount.(valid_create_options)
-      #   result = L::Auth::Operation::VerifyAccount.(token: result[:verify_account_token])
-      #   result = K::Auth::Operation::ResetPassword.(email: "yogi@trb.to")
-      #   token  = result[:reset_password_token]
+      #:update-fail
+      it "fails with wrong password combo" do
+        result = K::Auth::Operation::CreateAccount.(valid_create_options)
+        result = L::Auth::Operation::VerifyAccount.(token: result[:verify_account_token])
+        result = K::Auth::Operation::ResetPassword.(email: "yogi@trb.to")
+        token  = result[:reset_password_token]
 
-      #   result = Auth::Operation::UpdatePassword::CheckToken.wtf?(token: token + "rubbish")
-      #   assert result.failure?
-      # end
+        result = Auth::Operation::UpdatePassword.wtf?(
+          token:            token,
+          password:         "12345678",
+          password_confirm: "123"
+        )
+        assert result.failure?
+        assert_equal "Passwords do not match.", result[:error]
+        assert_nil result[:user].password
+      end
+      #:update-fail end
     end
     puts output.gsub("Auth2Test::L::", "")
   end
