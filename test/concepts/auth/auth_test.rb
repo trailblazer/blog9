@@ -799,7 +799,7 @@ class AuthOperationTest < Minitest::Spec
           assert_match /#{user.id}_.+/, result[:verify_account_token]
 
           verify_account_key = VerifyAccountKey.where(user_id: user.id)[0]
-          # token is something like "aJK1mzcc6adgGvcJq8rM_bkfHk9FTtjypD8x7RZOkDo"
+          # key is something like "aJK1mzcc6adgGvcJq8rM_bkfHk9FTtjypD8x7RZOkDo"
           assert_equal 43, verify_account_key.key.size
 
           assert_match /\/auth\/verify_account\/#{user.id}_#{verify_account_key.key}/, result[:email].body.to_s
