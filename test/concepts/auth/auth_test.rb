@@ -1,7 +1,7 @@
 require "test_helper"
 
 class AuthOperationTest < Minitest::Spec
-  before { User.delete_all; VerifyAccountToken.delete_all }
+  before { User.delete_all; VerifyAccountKey.delete_all }
   include ActionMailer::TestHelper
 
   def it(*)
@@ -43,7 +43,7 @@ class AuthOperationTest < Minitest::Spec
     assert_raises ArgumentError do
       #:op-call-missing-kw
       # test/concepts/auth/operation_test.rb
-      it "validates email and password" do
+      it "accepts valid email and passwords" do
         result = Auth::Operation::CreateAccount.({}) # op-interface
         #=> ArgumentError: missing keyword: :email
       end
@@ -53,7 +53,7 @@ class AuthOperationTest < Minitest::Spec
     assert_raises ArgumentError do
       #:op-call-missing-passwords
       # test/concepts/auth/operation_test.rb
-      it "validates email and password" do
+      it "accepts valid email and passwords" do
         result = Auth::Operation::CreateAccount.({email: "yogi@trb.to"}) # here's an email!
         #=> ArgumentError: missing keywords: :password, :password_confirm
         #     app/concepts/auth/operation/create_account.rb:22:in `passwords_identical?'
@@ -66,7 +66,7 @@ class AuthOperationTest < Minitest::Spec
       assert_raises ArgumentError do
         #:op-call-missing-passwords-wtf
         # test/concepts/auth/operation_test.rb
-        it "validates email and password" do
+        it "accepts valid email and passwords" do
           result = Auth::Operation::CreateAccount.wtf?({email: "yogi@trb.to"})
         end
         #:op-call-missing-passwords-wtf end
@@ -79,7 +79,7 @@ class AuthOperationTest < Minitest::Spec
     output, _ = capture_io do
       #:op-call-wtf
       # test/concepts/auth/operation_test.rb
-      it "validates email and password" do
+      it "accepts valid email and passwords" do
         result = Auth::Operation::CreateAccount.wtf?(
           {
             email:            "yogi@trb.to",
@@ -99,7 +99,7 @@ class AuthOperationTest < Minitest::Spec
     output, _ = capture_io do
       #:op-call-failure
       # test/concepts/auth/operation_test.rb
-      it "validates email and password" do
+      it "fails on invalid input" do
         result = Auth::Operation::CreateAccount.wtf?(
           {
             email:            "yogi@trb", # invalid email.
@@ -115,6 +115,9 @@ class AuthOperationTest < Minitest::Spec
     end
     puts output.gsub("AuthOperationTest::A::", "")
   end
+
+# TODO:
+# t test/operations/auth_operation_test.rb
 
 # introduce {fail}, but wrong
   module B
@@ -449,7 +452,7 @@ class AuthOperationTest < Minitest::Spec
     #:op-save-account end
   end
 
-  before { User.delete_all; VerifyAccountToken.delete_all }
+  before { User.delete_all; VerifyAccountKey.delete_all }
   it "what" do
     Auth = E::Auth
 
@@ -571,8 +574,8 @@ class AuthOperationTest < Minitest::Spec
         step :password_hash
         step :state
         step :save_account
-        step :generate_verify_account_token
-        step :save_verify_account_token
+        step :generate_verify_account_key
+        step :save_verify_account_key
 
         #~meth
         def check_email(ctx, email:, **)
@@ -609,13 +612,13 @@ class AuthOperationTest < Minitest::Spec
           ctx[:user] = user
         end
         #~meth end
-        def generate_verify_account_token(ctx, secure_random: SecureRandom, **)
-          ctx[:verify_account_token] = secure_random.urlsafe_base64(32)
+        def generate_verify_account_key(ctx, secure_random: SecureRandom, **)
+          ctx[:verify_account_key] = secure_random.urlsafe_base64(32)
         end
 
-        def save_verify_account_token(ctx, verify_account_token:, user:, **)
+        def save_verify_account_key(ctx, verify_account_key:, user:, **)
           begin
-            VerifyAccountToken.create(user_id: user.id, token: verify_account_token)
+            VerifyAccountKey.create(user_id: user.id, key: verify_account_key)
           rescue ActiveRecord::RecordNotUnique
             ctx[:error] = "Please try again."
             return false
@@ -630,7 +633,7 @@ class AuthOperationTest < Minitest::Spec
     Auth = G::Auth
 
     output = nil
-    output, _ = capture_io do
+    # output, _ = capture_io do
       #:verify-token
       # test/concepts/auth/operation_test.rb
       it "validates input, encrypts the password, saves user, and creates a verify-account token" do
@@ -650,9 +653,9 @@ class AuthOperationTest < Minitest::Spec
         assert_equal 60, user.password.size
         assert_equal "created, please verify account", user.state
 
-        verify_account_token = VerifyAccountToken.where(user_id: user.id)[0]
-        # token is something like "aJK1mzcc6adgGvcJq8rM_bkfHk9FTtjypD8x7RZOkDo"
-        assert_equal 43, verify_account_token.token.size
+        verify_account_token = VerifyAccountKey.where(user_id: user.id)[0]
+        # key is something like "aJK1mzcc6adgGvcJq8rM_bkfHk9FTtjypD8x7RZOkDo"
+        assert_equal 43, verify_account_token.key.size
       end
       #:verify-token end
 
@@ -673,15 +676,15 @@ class AuthOperationTest < Minitest::Spec
 
         result = Auth::Operation::CreateAccount.wtf?(options)
         assert result.success?
-        assert_equal "this is not random", result[:verify_account_token]
+        assert_equal "this is not random", result[:verify_account_key]
 
         result = Auth::Operation::CreateAccount.wtf?(options.merge(email: "celso@trb.to"))
         assert result.failure? # verify account token is not unique.
         assert_equal "Please try again.", result[:error]
       end
       #:verify-token-unique end
-    end
-    puts output.gsub("AuthOperationTest::G::", "")
+    # end
+    # puts output.gsub("AuthOperationTest::G::", "")
   end
 
 # verify account email
@@ -702,8 +705,8 @@ class AuthOperationTest < Minitest::Spec
         step :password_hash
         step :state
         step :save_account
-        step :generate_verify_account_token
-        step :save_verify_account_token
+        step :generate_verify_account_key
+        step :save_verify_account_key
         step :send_verify_account_email
 
         #~meth
@@ -739,13 +742,13 @@ class AuthOperationTest < Minitest::Spec
 
           ctx[:user] = user
         end
-        def generate_verify_account_token(ctx, secure_random: SecureRandom, **)
-          ctx[:verify_account_token] = secure_random.urlsafe_base64(32)
+        def generate_verify_account_key(ctx, secure_random: SecureRandom, **)
+          ctx[:verify_account_key] = secure_random.urlsafe_base64(32)
         end
 
-        def save_verify_account_token(ctx, verify_account_token:, user:, **)
+        def save_verify_account_key(ctx, verify_account_key:, user:, **)
           begin
-            VerifyAccountToken.create(user_id: user.id, token: verify_account_token)
+            VerifyAccountKey.create(user_id: user.id, key: verify_account_key)
           rescue ActiveRecord::RecordNotUnique
             ctx[:error] = "Please try again."
             return false
@@ -753,12 +756,12 @@ class AuthOperationTest < Minitest::Spec
         end
         #~meth end
 
-        def send_verify_account_email(ctx, verify_account_token:, user:, **)
-          token_path = "#{user.id}_#{verify_account_token}" # stolen from Rodauth.
+        def send_verify_account_email(ctx, verify_account_key:, user:, **)
+          token = "#{user.id}_#{verify_account_key}" # stolen from Rodauth.
 
-          ctx[:verify_account_token] = token_path
+          ctx[:verify_account_token] = token
 
-          ctx[:email] = AuthMailer.with(email: user.email, verify_token: token_path).welcome_email.deliver_now
+          ctx[:email] = AuthMailer.with(email: user.email, verify_token: token).welcome_email.deliver_now
         end
       end
     end
@@ -770,18 +773,20 @@ class AuthOperationTest < Minitest::Spec
 
     output = nil
     output, _ = capture_io do
-      assert_emails 1 do
         #:verify-email
         # test/concepts/auth/operation_test.rb
         it "validates input, encrypts the password, saves user,
               creates a verify-account token and send a welcome email" do
-          result = Auth::Operation::CreateAccount.wtf?(
-            {
-              email:            "yogi@trb.to",
-              password:         "1234",
-              password_confirm: "1234",
-            }
-          )
+          result = nil
+          assert_emails 1 do
+            result = Auth::Operation::CreateAccount.wtf?(
+              {
+                email:            "yogi@trb.to",
+                password:         "1234",
+                password_confirm: "1234",
+              }
+            )
+          end
 
           assert result.success?
 
@@ -793,13 +798,12 @@ class AuthOperationTest < Minitest::Spec
 
           assert_match /#{user.id}_.+/, result[:verify_account_token]
 
-          verify_account_token = VerifyAccountToken.where(user_id: user.id)[0]
+          verify_account_key = VerifyAccountKey.where(user_id: user.id)[0]
           # token is something like "aJK1mzcc6adgGvcJq8rM_bkfHk9FTtjypD8x7RZOkDo"
-          assert_equal 43, verify_account_token.token.size
+          assert_equal 43, verify_account_key.key.size
 
-          assert_match /\/auth\/verify_account\/#{user.id}_#{verify_account_token.token}/, result[:email].body.to_s
+          assert_match /\/auth\/verify_account\/#{user.id}_#{verify_account_key.key}/, result[:email].body.to_s
         end
-      end
       #:verify-email end
     end
     puts output.gsub("AuthOperationTest::H::", "")

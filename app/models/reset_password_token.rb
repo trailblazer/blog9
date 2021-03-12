@@ -1,2 +1,0 @@
-class ResetPasswordToken < ApplicationRecord
-end

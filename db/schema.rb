@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_03_05_191238) do
+ActiveRecord::Schema.define(version: 2021_03_10_160223) do
 
   create_table "posts", force: :cascade do |t|
     t.text "content"
@@ -19,6 +19,14 @@ ActiveRecord::Schema.define(version: 2021_03_05_191238) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "slug"
+  end
+
+  create_table "reset_password_keys", force: :cascade do |t|
+    t.integer "user_id"
+    t.text "key"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["key"], name: "index_reset_password_keys_on_key", unique: true
   end
 
   create_table "reviews", force: :cascade do |t|
@@ -34,16 +42,15 @@ ActiveRecord::Schema.define(version: 2021_03_05_191238) do
     t.text "email"
     t.text "state"
     t.text "password"
-    t.text "verify_account_token"
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
-  create_table "verify_account_tokens", force: :cascade do |t|
+  create_table "verify_account_keys", force: :cascade do |t|
     t.integer "user_id"
-    t.text "token"
+    t.text "key"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index ["token"], name: "index_verify_account_tokens_on_token", unique: true
+    t.index ["key"], name: "index_verify_account_keys_on_key", unique: true
   end
 
 end
