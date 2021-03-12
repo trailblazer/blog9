@@ -60,7 +60,7 @@ module Test::Auth::Operation
 
     def save_verify_account_token(ctx, verify_account_token:, user:, **)
       begin
-        VerifyAccountToken.create(user_id: user.id, token: verify_account_token)
+        VerifyAccountKey.create(user_id: user.id, key: verify_account_token)
       rescue ActiveRecord::RecordNotUnique
         ctx[:error] = "Please try again."
         return false
@@ -82,7 +82,7 @@ class Auth2Test < Minitest::Spec
   include ActionMailer::TestHelper
 
   def it(*)
-    User.delete_all; VerifyAccountToken.delete_all; ResetPasswordToken.delete_all; # FIXME!!!!!!!!!!!!!!!!1one
+    User.delete_all; VerifyAccountKey.delete_all; ResetPasswordKey.delete_all; # FIXME!!!!!!!!!!!!!!!!1one
 
     yield
   end
@@ -115,12 +115,12 @@ class Auth2Test < Minitest::Spec
     module Auth::Operation
       class VerifyAccount < Trailblazer::Operation
         step :extract_from_token
-        step :find_verify_account_token
+        step :find_verify_account_key
         step :find_user
         step :compare_keys
         step :state # DISCUSS: move outside?
         step :save  # DISCUSS: move outside?
-        step :expire_verify_account_token
+        step :expire_verify_account_key
 
         def extract_from_token(ctx, verify_account_token:, **)
           id, key = Auth::TokenUtils.split_token(verify_account_token)
@@ -129,8 +129,8 @@ class Auth2Test < Minitest::Spec
           ctx[:key] = key # returns false if we don't have a key.
         end
 
-        def find_verify_account_token(ctx, id:, **)
-          ctx[:verify_account_key] = VerifyAccountToken.where(user_id: id)[0]
+        def find_verify_account_key(ctx, id:, **)
+          ctx[:verify_account_key] = VerifyAccountKey.where(user_id: id)[0]
         end
 
         def find_user(ctx, id:, **)
@@ -138,7 +138,7 @@ class Auth2Test < Minitest::Spec
         end
 
         def compare_keys(ctx, verify_account_key:, key:, **)
-          Auth::TokenUtils.timing_safe_eql?(key, verify_account_key.token) # a hack-proof == comparison.
+          Auth::TokenUtils.timing_safe_eql?(key, verify_account_key.key) # a hack-proof == comparison.
         end
 
         def state(ctx, user:, **)
@@ -149,7 +149,7 @@ class Auth2Test < Minitest::Spec
           user.save
         end
 
-        def expire_verify_account_token(ctx, verify_account_key:, **)
+        def expire_verify_account_key(ctx, verify_account_key:, **)
           verify_account_key.delete
         end
       end
@@ -167,7 +167,7 @@ class Auth2Test < Minitest::Spec
   }
   #:valid-create-options end
 
-  before { User.delete_all; VerifyAccountToken.delete_all }
+  before { User.delete_all; VerifyAccountKey.delete_all }
 
   it "what" do
     Auth = I::Auth
@@ -188,13 +188,12 @@ class Auth2Test < Minitest::Spec
         user = result[:user]
         assert_equal "ready to login", user.state
         assert_equal "yogi@trb.to", user.email
-        assert_nil VerifyAccountToken.where(user_id: user.id)[0]
+        assert_nil VerifyAccountKey.where(user_id: user.id)[0]
       end
       #:verify-find end
 
       #:verify-invalid-id
       it "fails with invalid ID prefix" do
-        puts "yo"
         result = Auth::Operation::VerifyAccount.wtf?(verify_account_token: "0_safasdfafsaf")
         assert result.failure?
       end
@@ -267,7 +266,7 @@ class Auth2Test < Minitest::Spec
         # FIXME: almost copied from CreateAccount!!!
         def save_verify_account_token(ctx, verify_account_token:, user:, **)
           begin
-            ResetPasswordToken.create(user_id: user.id, token: verify_account_token) # VerifyAccountToken => ResetPasswordToken
+            ResetPasswordKey.create(user_id: user.id, key: verify_account_token) # VerifyAccountKey => ResetPasswordKey
           rescue ActiveRecord::RecordNotUnique
             ctx[:error] = "Please try again."
             return false
@@ -327,11 +326,11 @@ class Auth2Test < Minitest::Spec
 
           assert_match /#{user.id}_.+/, result[:verify_account_token]
 
-          reset_password_token = ResetPasswordToken.where(user_id: user.id)[0]
+          reset_password_token = ResetPasswordKey.where(user_id: user.id)[0]
           # token is something like "aJK1mzcc6adgGvcJq8rM_bkfHk9FTtjypD8x7RZOkDo"
-          assert_equal 43, reset_password_token.token.size
+          assert_equal 43, reset_password_token.key.size
 
-          assert_match /\/auth\/reset_password\/#{user.id}_#{reset_password_token.token}/, result[:email].body.to_s
+          assert_match /\/auth\/reset_password\/#{user.id}_#{reset_password_token.key}/, result[:email].body.to_s
         end
         #:reset end
 
@@ -345,23 +344,23 @@ class Auth2Test < Minitest::Spec
     #:create-token
     module Auth
       module Activity
-        class CreateToken < Trailblazer::Operation
-          step :generate_token
-          step :save_token
+        class CreateKey < Trailblazer::Operation
+          step :generate_key
+          step :save_key
 
-          def generate_token(ctx, secure_random: SecureRandom, **)
-            ctx[:token] = secure_random.urlsafe_base64(32)
+          def generate_key(ctx, secure_random: SecureRandom, **)
+            ctx[:key] = secure_random.urlsafe_base64(32)
           end
 
-          def save_token(ctx, token:, user:, token_model_class:, **)
+          def save_key(ctx, key:, user:, key_model_class:, **)
             begin
-              token_model_class.create(user_id: user.id, token: token) # token_model_class = VerifyAccountToken or ResetPasswordToken
+              key_model_class.create(user_id: user.id, key: key) # key_model_class = VerifyAccountKey or ResetPasswordKey
             rescue ActiveRecord::RecordNotUnique
               ctx[:error] = "Please try again."
               return false
             end
           end
-        end # CreateToken
+        end # CreateKey
       end
     end
     #:create-token end
@@ -373,9 +372,9 @@ class Auth2Test < Minitest::Spec
         pass :reset_password
         step :state
         step :save_user
-        step Subprocess(Auth::Activity::CreateToken),
-          input:  ->(ctx, user:, **) { {token_model_class: ResetPasswordToken, user: user} },
-          output: {token: :reset_password_token}
+        step Subprocess(Auth::Activity::CreateKey),
+          input:  ->(ctx, user:, **) { {key_model_class: ResetPasswordKey, user: user} },
+          output: {key: :reset_password_key}
         step :send_verify_account_email
 
         def find_user(ctx, email:, **)
@@ -394,12 +393,12 @@ class Auth2Test < Minitest::Spec
           user.save
         end
 
-        def send_verify_account_email(ctx, reset_password_token:, user:, **)
-          token_path = "#{user.id}_#{reset_password_token}" # stolen from Rodauth.
+        def send_verify_account_email(ctx, reset_password_key:, user:, **)
+          token = "#{user.id}_#{reset_password_key}" # stolen from Rodauth.
 
-          ctx[:reset_password_token] = token_path
+          ctx[:reset_password_token] = token
 
-          ctx[:email] = AuthMailer.with(email: user.email, reset_password_token: token_path).reset_password_email.deliver_now
+          ctx[:email] = AuthMailer.with(email: user.email, reset_password_token: token).reset_password_email.deliver_now
         end
       end
     end
@@ -409,8 +408,8 @@ class Auth2Test < Minitest::Spec
       class CreateAccount < Test::Auth::Operation::CreateAccount
         step nil, delete: :generate_verify_account_token
         step nil, delete: :save_verify_account_token
-        step Subprocess(Auth::Activity::CreateToken), after: :save_account,
-          input:  ->(ctx, user:, **) { {token_model_class: VerifyAccountToken, user: user} },
+        step Subprocess(Auth::Activity::CreateKey), after: :save_account,
+          input:  ->(ctx, user:, **) { {key_model_class: VerifyAccountKey, user: user} },
           output: {token: :verify_account_token}
       end
 
@@ -420,8 +419,8 @@ class Auth2Test < Minitest::Spec
         class CreateAccount < Trailblazer::Operation
           # ...
           step :save_account
-          step Subprocess(Auth::Activity::CreateToken),
-            input:  ->(ctx, user:, **) { {token_model_class: VerifyAccountToken, user: user} },
+          step Subprocess(Auth::Activity::CreateKey),
+            input:  ->(ctx, user:, **) { {key_model_class: VerifyAccountKey, user: user} },
             output: {token: :verify_account_token}
           # ...
         end
@@ -462,11 +461,11 @@ class Auth2Test < Minitest::Spec
 
             assert_match /#{user.id}_.+/, result[:reset_password_token]
 
-            reset_password_token = ResetPasswordToken.where(user_id: user.id)[0]
-            # token is something like "aJK1mzcc6adgGvcJq8rM_bkfHk9FTtjypD8x7RZOkDo"
-            assert_equal 43, reset_password_token.token.size
+            reset_password_key = ResetPasswordKey.where(user_id: user.id)[0]
+            # key is something like "aJK1mzcc6adgGvcJq8rM_bkfHk9FTtjypD8x7RZOkDo"
+            assert_equal 43, reset_password_key.key.size
 
-            assert_match /\/auth\/reset_password\/#{user.id}_#{reset_password_token.token}/, result[:email].body.to_s
+            assert_match /\/auth\/reset_password\/#{user.id}_#{reset_password_key.key}/, result[:email].body.to_s
           end
         #:reset-sub end
 
@@ -506,7 +505,7 @@ class Auth2Test < Minitest::Spec
         end
 
         def compare_keys(ctx, input_key:, key:, **)
-          Auth::TokenUtils.timing_safe_eql?(input_key, key.token) # a hack-proof == comparison.
+          Auth::TokenUtils.timing_safe_eql?(input_key, key.key) # a hack-proof == comparison.
         end
 
         private def key_model_class
@@ -547,14 +546,14 @@ class Auth2Test < Minitest::Spec
       class VerifyAccount < Trailblazer::Operation
         class CheckToken < Auth::Activity::CheckToken
           private def key_model_class
-            VerifyAccountToken
+            VerifyAccountKey
           end
         end
 
         step Subprocess(CheckToken)
         step :state # DISCUSS: move outside?
         step :save  # DISCUSS: move outside?
-        step :expire_verify_account_token
+        step :expire_verify_account_key
         #~meth
         def state(ctx, user:, **)
           user.state = "ready to login"
@@ -565,7 +564,7 @@ class Auth2Test < Minitest::Spec
         end
         #~meth end
 
-        def expire_verify_account_token(ctx, key:, **)
+        def expire_verify_account_key(ctx, key:, **)
           key.delete
         end
       end
@@ -614,7 +613,7 @@ class Auth2Test < Minitest::Spec
 
         def save_verify_account_token(ctx, verify_account_token:, user:, **)
           begin
-            VerifyAccountToken.create(user_id: user.id, token: verify_account_token)
+            VerifyAccountKey.create(user_id: user.id, token: verify_account_token)
           rescue ActiveRecord::RecordNotUnique
             ctx[:error] = "Please try again."
             return false
@@ -639,7 +638,7 @@ class Auth2Test < Minitest::Spec
         #~check
         class CheckToken < Auth::Activity::CheckToken
           private def key_model_class
-            ResetPasswordToken
+            ResetPasswordKey
           end
         end
         #~check end
@@ -718,7 +717,7 @@ class Auth2Test < Minitest::Spec
         assert_equal "password reset, please change password", user.state
 
         # key is still in database:
-        reset_password_key = ResetPasswordToken.where(user_id: user.id)[0]
+        reset_password_key = ResetPasswordKey.where(user_id: user.id)[0]
         # key hasn't changed:
         assert_equal original_key, reset_password_key
       end
@@ -760,7 +759,7 @@ class Auth2Test < Minitest::Spec
         assert_equal "ready to login", user.state
 
         # key is expired:
-        assert_nil ResetPasswordToken.where(user_id: user.id)[0]
+        assert_nil ResetPasswordKey.where(user_id: user.id)[0]
       end
       #:update end
 
