@@ -21,7 +21,7 @@ gem 'webpacker', '~> 4.0'
 gem 'bootsnap', '>= 1.4.2', require: false
 
 gem "trailblazer", ">= 2.1.0"
-gem "trailblazer-developer", path: "../trailblazer-developer"
+# gem "trailblazer-developer", path: "../trailblazer-developer"
 # gem "trailblazer-developer"
 gem "trailblazer-workflow", path: "../trailblazer-workflow"
 # gem "trailblazer-activity", path: "../trailblazer-activity"
@@ -48,7 +48,6 @@ gem "rails_email_validator"
 # gem "trailblazer-macro",          github: "trailblazer/trailblazer-macro", branch: "ruby-3"
 # gem "trailblazer-macro-contract", github: "trailblazer/trailblazer-macro-contract", branch: "ruby-3"
 gem "trailblazer-operation", ">= 0.7.1"
-
 gem "bcrypt"
 
 group :development, :test do
@@ -61,7 +60,7 @@ group :development, :test do
 end
 
 group :development do
-gem "trailblazer-generator", path: "../trailblazer-generator"
+# gem "trailblazer-generator", path: "../trailblazer-generator"
   # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
   gem 'web-console', '>= 3.3.0'
   gem 'listen', '~> 3.2'
@@ -70,6 +69,8 @@ gem "trailblazer-generator", path: "../trailblazer-generator"
   gem 'spring-watcher-listen', '~> 2.0.0'
   gem "faraday"
   gem "multi_json"
+
+  # gem "database_cleaner-active_record"
 end
 
 group :test do
