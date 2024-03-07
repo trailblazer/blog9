@@ -1,6 +1,6 @@
 require "trailblazer/activity/testing"
  implementing_ui = Trailblazer::Activity::Testing.def_steps(:create_form, :ui_create, :update_form, :ui_update, :notify_approver, :reject, :approve, :revise, :publish, :archive, :delete, :delete_form, :cancel, :revise_form,
-      :create_form_with_errors, :update_form_with_errors, :revise_form_with_errors)
+      :create_form_with_errors, :update_form_with_errors, :revise_form_with_errors, :Approve, :Notify, :Reject)
 
 Posting::Collaboration = Trailblazer::Workflow.Collaboration(
   json_file: "app/concepts/posting/posting-v1.json",
@@ -46,7 +46,9 @@ Posting::Collaboration = Trailblazer::Workflow.Collaboration(
       label: "reviewer",
       icon: "☑",
       implementation: {
-
+        "Approve" => implementing_ui.method(:Approve),
+        "Notify" => implementing_ui.method(:Notify),
+        "Reject" => implementing_ui.method(:Reject),
       }
 
     }
