@@ -2,6 +2,14 @@ require "trailblazer/activity/testing"
  implementing_ui = Trailblazer::Activity::Testing.def_steps(:create_form, :ui_create, :update_form, :ui_update, :notify_approver, :reject, :approve, :revise, :publish, :archive, :delete, :delete_form, :cancel, :revise_form,
       :create_form_with_errors, :update_form_with_errors, :revise_form_with_errors, :Approve, :Notify, :Reject)
 
+
+def noop_task(name)
+  ->(ctx, **) do
+    true
+  end
+end
+
+
 Posting::Collaboration = Trailblazer::Workflow.Collaboration(
   json_file: "app/concepts/posting/posting-v1.json",
   lanes: {
@@ -25,10 +33,10 @@ Posting::Collaboration = Trailblazer::Workflow.Collaboration(
       icon:  "☝",
       implementation: {
         "Create form" => Trailblazer::Activity::Railway.Subprocess(Post::Operation::Create::Present),
-        "Create" => implementing_ui.method(:ui_create),
-        "Update form" => implementing_ui.method(:update_form),
-        "Update" => implementing_ui.method(:ui_update),
-        "Notify approver" => implementing_ui.method(:notify_approver),
+        "Create" => noop_task(:ui_create),
+        "Update form" => Trailblazer::Activity::Railway.Subprocess(Post::Operation::Update::Present),
+        "Update" => noop_task(:ui_update),
+        "Notify approver" => noop_task(:notify_approver),
         "Publish" => implementing_ui.method(:publish),
         "Delete" => implementing_ui.method(:delete),
         "Delete? form" => implementing_ui.method(:delete_form),
@@ -47,7 +55,7 @@ Posting::Collaboration = Trailblazer::Workflow.Collaboration(
       icon: "☑",
       implementation: {
         "Approve" => implementing_ui.method(:Approve),
-        "Notify" => implementing_ui.method(:Notify),
+        "Notify" => noop_task(:Notify),
         "Reject" => implementing_ui.method(:Reject),
       }
 

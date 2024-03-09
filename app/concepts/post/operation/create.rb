@@ -7,12 +7,12 @@ module Post::Operation
       validates :content, presence: true
     end
 
-    # class Present < Trailblazer::Operation
+    class Present < Trailblazer::Operation
       step Model(Post, :new)
       step Contract::Build(constant: Form)
-    # end
+    end
 
-    # step Nested(Present)
+    step Nested(Present)
 
     step Contract::Validate(key: :post)
     step :state

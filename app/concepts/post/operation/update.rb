@@ -1,11 +1,11 @@
 module Post::Operation
   class Update < Trailblazer::Operation # DISCUSS: inherit from {Create}?
-    # class Present < Trailblazer::Operation
-    #   step Model(Post, :find_by)
+    class Present < Trailblazer::Operation
+      step Model(Post, :find_by)
       step Contract::Build(constant: Post::Operation::Create::Form)
-    # end
+    end
 
-    # step Nested(Present)
+    step Nested(Present)
     step Contract::Validate(key: :post)
     step :state
     step Contract::Persist()
