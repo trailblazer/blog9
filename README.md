@@ -1,5 +1,8 @@
 # README
 
+rails g trailblazer:pro:import 9661db app/concepts/posting/posting-v1.json
+rails g trailblazer:pro:discover Posting::Collaboration "<ui> author workflow"  app/concepts/posting/posting-v1.json
+
 
 ## ChromeDriver on Ubuntu 20.04
 

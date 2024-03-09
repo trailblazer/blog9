@@ -110,21 +110,16 @@ ctx = assert_advance "☑ ⏵︎Approve", test_plan: test_plan, schema: schema, 
 assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: "approved, ready to publish"
 
 # test: ☝ ⏵︎Delete? form
-ctx = assert_advance "☝ ⏵︎Delete? form", test_plan: test_plan, schema: schema, ctx: {params: {id: ctx[:model].id, post: {content: "Truly epic"}}}, flow_options: Blog9::FLOW_OPTIONS
-assert_equal ctx[:contract].class, Post::Operation::Create::Form
-
-
-
-# test: ☝ ⏵︎Delete
-ctx = assert_advance "☝ ⏵︎Delete", test_plan: test_plan, schema: schema, ctx: {params: {id: ctx[:model].id, post: {content: "Truly epic"}}}, flow_options: Blog9::FLOW_OPTIONS
-assert_exposes ctx, seq: [:revise, :revise], reader: :[]
-
+ctx = assert_advance "☝ ⏵︎Delete? form", test_plan: test_plan, schema: schema, ctx: {model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
+# assert_equal ctx[:contract].class, Post::Operation::Create::Form
+assert_equal ctx[:model].id, original_model.id # we need the ID as a hidden field.
 
 # test: ☝ ⏵︎Cancel
-ctx = assert_advance "☝ ⏵︎Cancel", test_plan: test_plan, schema: schema, ctx: {params: {id: ctx[:model].id, post: {content: "Truly epic"}}}, flow_options: Blog9::FLOW_OPTIONS
-assert_exposes ctx, seq: [:revise, :revise], reader: :[]
+ctx = assert_advance "☝ ⏵︎Cancel", test_plan: test_plan, schema: schema, ctx: {model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
+assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: "approved, ready to publish"
 
-
-
+# test: ☝ ⏵︎Delete
+ctx = assert_advance "☝ ⏵︎Delete", test_plan: test_plan, schema: schema, ctx: {model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
+assert_exposes ctx[:model], persisted?: false, content: "Truly epic", state: "approved, ready to publish", id: original_model.id
   end
 end
