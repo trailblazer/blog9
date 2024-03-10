@@ -123,5 +123,16 @@ assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: "app
 # test: ☝ ⏵︎Delete
 ctx = assert_advance "☝ ⏵︎Delete", test_plan: test_plan, schema: schema, ctx: {model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
 assert_exposes ctx[:model], persisted?: false, content: "Truly epic", state: "approved, ready to publish", id: original_model.id
+
+# TEST INVALID FORM SUBMISSIONS
+# test: ☝ ⏵︎Create ⛞
+ctx = assert_advance "☝ ⏵︎Create ⛞", test_plan: test_plan, schema: schema, ctx: {params: {post: {}}}, flow_options: Blog9::FLOW_OPTIONS
+assert_equal ctx[:contract].errors.messages.inspect, %({:content=>["can't be blank"]})
+
+# (2) test: ☝ ⏵︎Create
+    ctx = assert_advance "☝ ⏵︎Create", test_plan: test_plan, schema: schema, ctx: {params: {post: {content: "Exciting times!"}}}, flow_options: Blog9::FLOW_OPTIONS
+# test: ☝ ⏵︎Update ⛞
+ctx = assert_advance "☝ ⏵︎Update ⛞", test_plan: test_plan, schema: schema, ctx: {params: {id: ctx[:model].id, post: {content: ""}}}, flow_options: Blog9::FLOW_OPTIONS
+assert_equal ctx[:contract].errors.messages.inspect, %({:content=>["can't be blank"]})
   end
 end
