@@ -43,8 +43,8 @@ Posting::Collaboration = Trailblazer::Workflow.Collaboration(
         "Cancel" => noop_task(:cancel),
         "Revise" => noop_task(:revise),
         "Revise form" => Trailblazer::Activity::Railway.Subprocess(Post::Operation::Revise::Present),
-        "Create form with errors" => implementing_ui.method(:create_form_with_errors),
-        "Update form with errors" => noop_task(:update_form_with_errors),
+        "Create form with errors" => noop_task(:create_form_with_errors),
+        "Update form with errors" => noop_task(:update_form_with_errors), # we already have {ctx[:contract]} from {lifecycle:Create} here.
         "Revise form with errors" => implementing_ui.method(:revise_form_with_errors),
         "Archive" => noop_task(:archive),
 
