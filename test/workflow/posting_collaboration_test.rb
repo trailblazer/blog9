@@ -30,7 +30,7 @@ class Posting_CollaborationCollaborationTest < Minitest::Spec
 
 
   it "can run the collaboration" do
-    schema = Posting::Collaboration
+    schema = Posting::Collaboration::Schema
     # TODO: do this in an initializer?
     test_plan = Trailblazer::Workflow::Introspect::Iteration::Set::Deserialize.(JSON.parse(File.read("app/concepts/posting/posting-v1-discovered-iterations.json")), lanes_cfg: schema.to_h[:lanes])
 
