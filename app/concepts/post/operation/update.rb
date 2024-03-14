@@ -1,7 +1,7 @@
 module Post::Operation
   class Update < Trailblazer::Operation # DISCUSS: inherit from {Create}?
     class Present < Trailblazer::Operation
-      step Model(Post, :find_by)
+      # step Model(Post, :find_by)
       step Contract::Build(constant: Post::Operation::Create::Form)
     end
 
