@@ -56,6 +56,11 @@ class Posting_CollaborationCollaborationTest < Minitest::Spec
     ctx = assert_advance "☝ ⏵︎Notify approver", test_plan: test_plan, schema: schema, ctx: {params: {}, model: ctx[:model]}
     assert_exposes ctx[:model], persisted?: true, content: "Exciting times!", state: "waiting for review"
 
+  #@ invalid transition
+  # test: ☝ ⏵︎Publish
+  ctx = assert_advance "☝ ⏵︎Publish", test_plan: test_plan, schema: schema, ctx: {params: {}, model: ctx[:model]}, invalid: true
+  assert_exposes ctx[:model], persisted?: true, content: "Exciting times!", state: "waiting for review" # still in old mode.
+
 
     # test: ☑ ⏵︎Approve
     ctx = assert_advance "☑ ⏵︎Approve", test_plan: test_plan, schema: schema, ctx: {params: {}, model: ctx[:model]}
