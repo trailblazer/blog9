@@ -7,4 +7,6 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
+  get "postings/new" => "author#create_form"
+  post "postings/create" => "author#create_posting", as: :create_posting
 end

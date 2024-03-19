@@ -34,7 +34,10 @@ class Posting
           **schema.to_h,
           iteration_set: iteration_set,
           # state_guards:  state_guards, # DISCUSS: we come from the Schema.
+          **Blog9::FLOW_OPTIONS,
         }
+
+        ctx = Trailblazer::Context(ctx, {}, Blog9::FLOW_OPTIONS[:context_options]) # DISCUSS: handle this in Endpoint via In() and automatic context creation.
 
         Trailblazer::Endpoint::Runtime.(
           ctx,
