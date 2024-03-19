@@ -1,0 +1,354 @@
+PATH
+  remote: ../trailblazer-developer
+  specs:
+    trailblazer-developer (0.1.0)
+      hirb
+      trailblazer-activity-dsl-linear (>= 1.2.0, < 1.3.0)
+
+PATH
+  remote: ../trailblazer-endpoint
+  specs:
+    trailblazer-endpoint (0.1.0)
+      trailblazer-activity-dsl-linear (>= 1.2.0, < 1.3.0)
+
+PATH
+  remote: ../trailblazer-macro
+  specs:
+    trailblazer-macro (2.1.15)
+      trailblazer-activity-dsl-linear (>= 1.2.0, < 1.3.0)
+      trailblazer-operation (>= 0.10.1)
+
+PATH
+  remote: ../trailblazer-pro-rails
+  specs:
+    trailblazer-pro-rails (0.0.4)
+      trailblazer-pro (= 0.0.2)
+
+PATH
+  remote: ../trailblazer-pro
+  specs:
+    trailblazer-pro (0.0.2)
+      faraday
+      jwt
+      trailblazer-activity (>= 0.16.1, < 0.17.0)
+      trailblazer-activity-dsl-linear (>= 1.2.5)
+      trailblazer-developer (>= 0.1.0, < 0.2.0)
+
+PATH
+  remote: ../trailblazer-test
+  specs:
+    trailblazer-test (0.1.1)
+      hashie
+      trailblazer-activity (>= 0.10.0)
+      trailblazer-activity-dsl-linear (>= 0.2.5)
+
+PATH
+  remote: ../trailblazer-workflow
+  specs:
+    trailblazer-workflow (0.0.1)
+      multi_json
+      representable (~> 3.1)
+      terminal-table
+      trailblazer-activity (>= 0.16.2, < 0.17.0)
+      trailblazer-developer (>= 0.0.17)
+      trailblazer-macro
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    actioncable (7.1.3.2)
+      actionpack (= 7.1.3.2)
+      activesupport (= 7.1.3.2)
+      nio4r (~> 2.0)
+      websocket-driver (>= 0.6.1)
+      zeitwerk (~> 2.6)
+    actionmailbox (7.1.3.2)
+      actionpack (= 7.1.3.2)
+      activejob (= 7.1.3.2)
+      activerecord (= 7.1.3.2)
+      activestorage (= 7.1.3.2)
+      activesupport (= 7.1.3.2)
+      mail (>= 2.7.1)
+      net-imap
+      net-pop
+      net-smtp
+    actionmailer (7.1.3.2)
+      actionpack (= 7.1.3.2)
+      actionview (= 7.1.3.2)
+      activejob (= 7.1.3.2)
+      activesupport (= 7.1.3.2)
+      mail (~> 2.5, >= 2.5.4)
+      net-imap
+      net-pop
+      net-smtp
+      rails-dom-testing (~> 2.2)
+    actionpack (7.1.3.2)
+      actionview (= 7.1.3.2)
+      activesupport (= 7.1.3.2)
+      nokogiri (>= 1.8.5)
+      racc
+      rack (>= 2.2.4)
+      rack-session (>= 1.0.1)
+      rack-test (>= 0.6.3)
+      rails-dom-testing (~> 2.2)
+      rails-html-sanitizer (~> 1.6)
+    actiontext (7.1.3.2)
+      actionpack (= 7.1.3.2)
+      activerecord (= 7.1.3.2)
+      activestorage (= 7.1.3.2)
+      activesupport (= 7.1.3.2)
+      globalid (>= 0.6.0)
+      nokogiri (>= 1.8.5)
+    actionview (7.1.3.2)
+      activesupport (= 7.1.3.2)
+      builder (~> 3.1)
+      erubi (~> 1.11)
+      rails-dom-testing (~> 2.2)
+      rails-html-sanitizer (~> 1.6)
+    activejob (7.1.3.2)
+      activesupport (= 7.1.3.2)
+      globalid (>= 0.3.6)
+    activemodel (7.1.3.2)
+      activesupport (= 7.1.3.2)
+    activerecord (7.1.3.2)
+      activemodel (= 7.1.3.2)
+      activesupport (= 7.1.3.2)
+      timeout (>= 0.4.0)
+    activestorage (7.1.3.2)
+      actionpack (= 7.1.3.2)
+      activejob (= 7.1.3.2)
+      activerecord (= 7.1.3.2)
+      activesupport (= 7.1.3.2)
+      marcel (~> 1.0)
+    activesupport (7.1.3.2)
+      base64
+      bigdecimal
+      concurrent-ruby (~> 1.0, >= 1.0.2)
+      connection_pool (>= 2.2.5)
+      drb
+      i18n (>= 1.6, < 2)
+      minitest (>= 5.1)
+      mutex_m
+      tzinfo (~> 2.0)
+    addressable (2.8.6)
+      public_suffix (>= 2.0.2, < 6.0)
+    base64 (0.2.0)
+    bigdecimal (3.1.7)
+    bindex (0.8.1)
+    builder (3.2.4)
+    capybara (3.40.0)
+      addressable
+      matrix
+      mini_mime (>= 0.1.3)
+      nokogiri (~> 1.11)
+      rack (>= 1.6.0)
+      rack-test (>= 0.6.3)
+      regexp_parser (>= 1.5, < 3.0)
+      xpath (~> 3.2)
+    concurrent-ruby (1.2.3)
+    connection_pool (2.4.1)
+    crass (1.0.6)
+    date (3.3.4)
+    declarative (0.0.20)
+    disposable (0.6.3)
+      declarative (>= 0.0.9, < 1.0.0)
+      representable (>= 3.1.1, < 4)
+    drb (2.2.1)
+    erubi (1.12.0)
+    faraday (2.9.0)
+      faraday-net_http (>= 2.0, < 3.2)
+    faraday-net_http (3.1.0)
+      net-http
+    globalid (1.2.1)
+      activesupport (>= 6.1)
+    hashie (5.0.0)
+    hirb (0.7.3)
+    i18n (1.14.4)
+      concurrent-ruby (~> 1.0)
+    importmap-rails (2.0.1)
+      actionpack (>= 6.0.0)
+      activesupport (>= 6.0.0)
+      railties (>= 6.0.0)
+    io-console (0.7.2)
+    irb (1.12.0)
+      rdoc
+      reline (>= 0.4.2)
+    jwt (2.8.1)
+      base64
+    loofah (2.22.0)
+      crass (~> 1.0.2)
+      nokogiri (>= 1.12.0)
+    mail (2.8.1)
+      mini_mime (>= 0.1.1)
+      net-imap
+      net-pop
+      net-smtp
+    marcel (1.0.4)
+    matrix (0.4.2)
+    mini_mime (1.1.5)
+    minitest (5.22.3)
+    multi_json (1.15.0)
+    mutex_m (0.2.0)
+    net-http (0.4.1)
+      uri
+    net-imap (0.4.10)
+      date
+      net-protocol
+    net-pop (0.1.2)
+      net-protocol
+    net-protocol (0.2.2)
+      timeout
+    net-smtp (0.4.0.1)
+      net-protocol
+    nio4r (2.7.0)
+    nokogiri (1.16.3-x86_64-linux)
+      racc (~> 1.4)
+    psych (5.1.2)
+      stringio
+    public_suffix (5.0.4)
+    puma (6.4.2)
+      nio4r (~> 2.0)
+    racc (1.7.3)
+    rack (3.0.9.1)
+    rack-session (2.0.0)
+      rack (>= 3.0.0)
+    rack-test (2.1.0)
+      rack (>= 1.3)
+    rackup (2.1.0)
+      rack (>= 3)
+      webrick (~> 1.8)
+    rails (7.1.3.2)
+      actioncable (= 7.1.3.2)
+      actionmailbox (= 7.1.3.2)
+      actionmailer (= 7.1.3.2)
+      actionpack (= 7.1.3.2)
+      actiontext (= 7.1.3.2)
+      actionview (= 7.1.3.2)
+      activejob (= 7.1.3.2)
+      activemodel (= 7.1.3.2)
+      activerecord (= 7.1.3.2)
+      activestorage (= 7.1.3.2)
+      activesupport (= 7.1.3.2)
+      bundler (>= 1.15.0)
+      railties (= 7.1.3.2)
+    rails-dom-testing (2.2.0)
+      activesupport (>= 5.0.0)
+      minitest
+      nokogiri (>= 1.6)
+    rails-html-sanitizer (1.6.0)
+      loofah (~> 2.21)
+      nokogiri (~> 1.14)
+    railties (7.1.3.2)
+      actionpack (= 7.1.3.2)
+      activesupport (= 7.1.3.2)
+      irb
+      rackup (>= 1.0.0)
+      rake (>= 12.2)
+      thor (~> 1.0, >= 1.2.2)
+      zeitwerk (~> 2.6)
+    rake (13.1.0)
+    rdoc (6.6.2)
+      psych (>= 4.0.0)
+    reform (2.6.2)
+      disposable (>= 0.5.0, < 1.0.0)
+      representable (>= 3.1.1, < 4)
+      uber (< 0.2.0)
+    reform-rails (0.2.6)
+      activemodel (>= 5.0)
+      reform (>= 2.3.1, < 3.0.0)
+    regexp_parser (2.9.0)
+    reline (0.4.3)
+      io-console (~> 0.5)
+    representable (3.2.0)
+      declarative (< 0.1.0)
+      trailblazer-option (>= 0.1.1, < 0.2.0)
+      uber (< 0.2.0)
+    rexml (3.2.6)
+    rubyzip (2.3.2)
+    selenium-webdriver (4.18.1)
+      base64 (~> 0.2)
+      rexml (~> 3.2, >= 3.2.5)
+      rubyzip (>= 1.2.2, < 3.0)
+      websocket (~> 1.0)
+    sprockets (4.2.1)
+      concurrent-ruby (~> 1.0)
+      rack (>= 2.2.4, < 4)
+    sprockets-rails (3.4.2)
+      actionpack (>= 5.2)
+      activesupport (>= 5.2)
+      sprockets (>= 3.0.0)
+    sqlite3 (1.7.3-x86_64-linux)
+    stringio (3.1.0)
+    terminal-table (3.0.2)
+      unicode-display_width (>= 1.1.1, < 3)
+    thor (1.3.1)
+    timeout (0.4.1)
+    trailblazer (2.1.3)
+      trailblazer-activity-dsl-linear (>= 1.2.3, < 1.3.0)
+      trailblazer-developer (>= 0.1.0, < 0.2.0)
+      trailblazer-macro (>= 2.1.15, < 2.2.0)
+      trailblazer-macro-contract (>= 2.1.4, < 2.2.0)
+      trailblazer-operation (>= 0.9.0, < 1.0.0)
+    trailblazer-activity (0.16.2)
+      trailblazer-context (~> 0.5.0)
+      trailblazer-option (~> 0.1.0)
+    trailblazer-activity-dsl-linear (1.2.5)
+      trailblazer-activity (>= 0.16.0, < 0.17.0)
+      trailblazer-declarative (>= 0.0.1, < 0.1.0)
+    trailblazer-context (0.5.1)
+      hashie (>= 3.0.0)
+    trailblazer-declarative (0.0.2)
+    trailblazer-macro-contract (2.1.5)
+      reform (>= 2.2.0, < 3.0.0)
+      trailblazer-activity-dsl-linear (>= 1.2.0, < 1.3.0)
+    trailblazer-operation (0.10.1)
+      trailblazer-activity-dsl-linear (>= 1.2.0, < 1.4.0)
+      trailblazer-developer (>= 0.1.0, < 0.2.0)
+    trailblazer-option (0.1.2)
+    tzinfo (2.0.6)
+      concurrent-ruby (~> 1.0)
+    uber (0.1.0)
+    unicode-display_width (2.5.0)
+    uri (0.13.0)
+    web-console (4.2.1)
+      actionview (>= 6.0.0)
+      activemodel (>= 6.0.0)
+      bindex (>= 0.4.0)
+      railties (>= 6.0.0)
+    webrick (1.8.1)
+    websocket (1.2.10)
+    websocket-driver (0.7.6)
+      websocket-extensions (>= 0.1.0)
+    websocket-extensions (0.1.5)
+    xpath (3.2.0)
+      nokogiri (~> 1.8)
+    zeitwerk (2.6.13)
+
+PLATFORMS
+  x86_64-linux
+
+DEPENDENCIES
+  capybara
+  importmap-rails
+  puma (>= 5.0)
+  rails (~> 7.1.3, >= 7.1.3.2)
+  reform-rails
+  selenium-webdriver
+  sprockets-rails
+  sqlite3 (~> 1.4)
+  trailblazer (>= 2.1.0)
+  trailblazer-developer!
+  trailblazer-endpoint!
+  trailblazer-macro!
+  trailblazer-pro!
+  trailblazer-pro-rails!
+  trailblazer-test!
+  trailblazer-workflow!
+  tzinfo-data
+  web-console
+
+RUBY VERSION
+   ruby 3.0.0p0
+
+BUNDLED WITH
+   2.3.10
