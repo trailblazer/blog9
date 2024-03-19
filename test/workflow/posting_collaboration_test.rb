@@ -23,6 +23,8 @@
 
 require "test_helper"
 
+Posting::Endpoint
+
 class Posting_CollaborationCollaborationTest < Minitest::Spec
   include Trailblazer::Workflow::Test::Assertions
   require "trailblazer/test/assertions"

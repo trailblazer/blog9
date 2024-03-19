@@ -1,0 +1,3 @@
+class Posting
+
+end
