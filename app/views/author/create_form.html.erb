@@ -1,7 +1,12 @@
-yall
+<%= verb %> blog post
 
-<%= simple_form_for(contract, url: form_url, as: :post) do |f| %>
-    <div><%= f.error_notification %></div>
-    <div><%= f.input :content, label: "Your text", as: :text, required: false %></div>
-    <div><%= f.button :submit, value: "Submit!" %></div>
+<%= simple_form_for(contract, url: form_url, as: :posting) do |f| %>
+  <div><%= f.error_notification %></div>
+   <%= f.object.errors.full_messages.join(", ") if f.object.errors.any? %>
+  <div><%= f.input :content, label: "Your text", as: :text, required: false %></div>
+  <div><%= f.button :submit, value: "Submit!" %></div>
 <% end %>
+
+<ul>
+    <li><%= link_to "✅ Request review", request_review_path(id: model.id || "---") %></li>
+</ul>

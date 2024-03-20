@@ -28,7 +28,7 @@ class Posting
     )
 
     module Controller
-      def trigger(event_label, adapter: Adapter, schema: Posting::Collaboration::Schema, iteration_set: Posting::Collaboration::IterationSet, default_matcher: Posting::Endpoint::DefaultMatcher, **ctx, &block)
+      def trigger(event_label, adapter: Adapter::Model, schema: Posting::Collaboration::Schema, iteration_set: Posting::Collaboration::IterationSet, default_matcher: Posting::Endpoint::DefaultMatcher, **ctx, &block)
         flow_options = {
           event_label: event_label,
           **schema.to_h,

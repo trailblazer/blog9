@@ -9,4 +9,8 @@ Rails.application.routes.draw do
   # root "posts#index"
   get "postings/new" => "author#create_form"
   post "postings/create" => "author#create_posting", as: :create_posting
+  get "postings/update/:id" => "author#update_form", as: :update_posting_form
+  patch "postings/update/:id" => "author#update_posting", as: :update_posting
+
+  get "postings/:id/request_review" => "author#request_review", as: :request_review
 end

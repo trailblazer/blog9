@@ -14,7 +14,7 @@ module Posting::Operation
 
     step Nested(Present)
 
-    step Contract::Validate(key: :post)
+    step Contract::Validate(key: :posting)
     step :state
     step Contract::Persist()
 
