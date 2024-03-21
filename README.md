@@ -4,7 +4,7 @@
 
 The workflow for this example is designed using the Trailblazer PRO editor.
 
-![BPMN2 diagram with TRB flavoring for a blog post moderation workflow.](https://github.com/trailblazer/blog9/blob/main/moderation-version-10.png?raw=true)
+![BPMN2 diagram with TRB flavoring for a blog post moderation workflow.](https://github.com/trailblazer/blog9/blob/main/doc/moderation-version-10.png?raw=true)
 
 ## Notes
 
