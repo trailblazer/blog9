@@ -48,7 +48,7 @@ class Posting_CollaborationCollaborationTest < Minitest::Spec
 
 
     # test: ☝ ⏵︎Create
-    ctx = assert_advance "☝ ⏵︎Create", test_plan: test_plan, schema: schema, ctx: {params: {post: {content: "Exciting times!"}}}, flow_options: Blog9::FLOW_OPTIONS
+    ctx = assert_advance "☝ ⏵︎Create", test_plan: test_plan, schema: schema, ctx: {params: {posting: {content: "Exciting times!"}}}, flow_options: Blog9::FLOW_OPTIONS
     assert_equal ctx[:contract].class, Posting::Operation::Create::Form
     assert_exposes ctx[:model], persisted?: true, content: "Exciting times!", state: "created"
 
@@ -80,7 +80,7 @@ class Posting_CollaborationCollaborationTest < Minitest::Spec
 
 
 # rerun: ☝ ⏵︎Create
-ctx = assert_advance "☝ ⏵︎Create", test_plan: test_plan, schema: schema, ctx: {params: {post: {content: "Exciting times!"}}}, flow_options: Blog9::FLOW_OPTIONS
+ctx = assert_advance "☝ ⏵︎Create", test_plan: test_plan, schema: schema, ctx: {params: {posting: {content: "Exciting times!"}}}, flow_options: Blog9::FLOW_OPTIONS
 assert_equal ctx[:contract].class, Posting::Operation::Create::Form
 assert_exposes ctx[:model], persisted?: true, content: "Exciting times!", state: "created"
 
@@ -92,7 +92,7 @@ assert_equal ctx[:contract].class, Posting::Operation::Create::Form
 assert_equal ctx[:contract].content, "Exciting times!"
 
 # test: ☝ ⏵︎Update
-ctx = assert_advance "☝ ⏵︎Update", test_plan: test_plan, schema: schema, ctx: {params: {post: {content: "Exciting day"}}, model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
+ctx = assert_advance "☝ ⏵︎Update", test_plan: test_plan, schema: schema, ctx: {params: {posting: {content: "Exciting day"}}, model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
 assert_exposes ctx[:model], persisted?: true, content: "Exciting day", state: "updated"
   assert_equal original_model.id, ctx[:model].id
 
@@ -112,7 +112,7 @@ assert_equal ctx[:contract].content, "Exciting day"
 # TODO: also test review suggestions.
 
 # test: ☝ ⏵︎Revise
-ctx = assert_advance "☝ ⏵︎Revise", test_plan: test_plan, schema: schema, ctx: {params: {post: {content: "Truly epic"}}, model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
+ctx = assert_advance "☝ ⏵︎Revise", test_plan: test_plan, schema: schema, ctx: {params: {posting: {content: "Truly epic"}}, model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
 assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: "revised, review requested", id: original_model.id # FIXME: state label is confusing
 
 # TODO: test another revision of the author
@@ -140,13 +140,13 @@ assert_exposes ctx[:model], persisted?: false, content: "Truly epic", state: "ap
 
 # TEST INVALID FORM SUBMISSIONS
 # test: ☝ ⏵︎Create ⛞
-ctx = assert_advance "☝ ⏵︎Create ⛞", test_plan: test_plan, schema: schema, ctx: {params: {post: {}}}, flow_options: Blog9::FLOW_OPTIONS
+ctx = assert_advance "☝ ⏵︎Create ⛞", test_plan: test_plan, schema: schema, ctx: {params: {posting: {}}}, flow_options: Blog9::FLOW_OPTIONS
 assert_equal ctx[:contract].errors.messages.inspect, %({:content=>["can't be blank"]})
 
 # (2) test: ☝ ⏵︎Create
-    ctx = assert_advance "☝ ⏵︎Create", test_plan: test_plan, schema: schema, ctx: {params: {post: {content: "Exciting times!"}}}, flow_options: Blog9::FLOW_OPTIONS
+    ctx = assert_advance "☝ ⏵︎Create", test_plan: test_plan, schema: schema, ctx: {params: {posting: {content: "Exciting times!"}}}, flow_options: Blog9::FLOW_OPTIONS
 # test: ☝ ⏵︎Update ⛞
-ctx = assert_advance "☝ ⏵︎Update ⛞", test_plan: test_plan, schema: schema, ctx: {params: {post: {content: ""}}, model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
+ctx = assert_advance "☝ ⏵︎Update ⛞", test_plan: test_plan, schema: schema, ctx: {params: {posting: {content: ""}}, model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
 assert_equal ctx[:contract].errors.messages.inspect, %({:content=>["can't be blank"]})
   end
 end
