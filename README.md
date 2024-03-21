@@ -1,5 +1,11 @@
 # README
 
+## Editor
+
+The workflow for this example is designed using the Trailblazer PRO editor.
+
+![BPMN2 diagram with TRB flavoring for a blog post moderation workflow.](https://github.com/trailblazer/blog9/blob/main/moderation-version-10.png?raw=true)
+
 ## Notes
 
 1. `main` branch is deliberately using ActionView and _not_ Cells to not further steepen your learning curve.
