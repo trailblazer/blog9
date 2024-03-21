@@ -9,7 +9,7 @@ module Posting::Collaboration
         "⏸︎ Approve♦Reject"              => {guard: ->(ctx, model:, **) { ["waiting for review"].include?(model.state) }},
         "⏸︎ Delete? form♦Publish"        => {guard: ->(ctx, model:, **) { ["approved, ready to publish"].include?(model.state) }},
         "⏸︎ Delete♦Cancel"               => {guard: ->(ctx, model:, **) { ["approved, ready to publish"].include?(model.state) }},
-        "⏸︎ Revise form"                 => {guard: ->(ctx, model:, **) { ["edit requested"].include?(model.state) }},
+        "⏸︎ Revise form"                 => {guard: ->(ctx, model:, **) { ["edit requested", "revised, ready to request review"].include?(model.state) }},
         "⏸︎ Archive"                     => {guard: ->(ctx, model:, **) { ["published"].include?(model.state) }},
         "⏸︎ Revise"                      => {guard: ->(ctx, model:, **) { ["edit requested"].include?(model.state) }},
       },
