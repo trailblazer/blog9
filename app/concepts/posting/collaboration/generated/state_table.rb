@@ -7,9 +7,9 @@ module Posting::Collaboration::Generated
     "⏸︎ Update"                      => {id: ["catch-before-Activity_0j78uzd"]},
     "⏸︎ Approve♦Reject"              => {id: ["catch-before-Activity_13fw5nm", "catch-before-Activity_1j7d8sd"]},
     "⏸︎ Delete? form♦Publish"        => {id: ["catch-before-Activity_0bsjggk", "catch-before-Activity_0ha7224"]},
-    "⏸︎ Revise form"                 => {id: ["catch-before-Activity_0zsock2"]},
+    "⏸︎ Revise"                      => {id: ["catch-before-Activity_1wiumzv"]},
     "⏸︎ Delete♦Cancel"               => {id: ["catch-before-Activity_15nnysv", "catch-before-Activity_1uhozy1"]},
     "⏸︎ Archive"                     => {id: ["catch-before-Activity_0fy41qq"]},
-    "⏸︎ Revise"                      => {id: ["catch-before-Activity_1wiumzv"]},
+    "⏸︎ Revise form"                 => {id: ["catch-before-Activity_0zsock2"]},
   }
 end

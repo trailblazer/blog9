@@ -378,7 +378,7 @@
         ],
         "comment": [
           "before",
-          "☝ ⏵︎suspend-Gateway_1sq41iq ⏵︎suspend-gw-to-catch-before-Activity_0zsock2"
+          "☝ ⏵︎suspend-Gateway_1sq41iq ⏵︎catch-before-Activity_0zsock2"
         ]
       },
       {
@@ -504,7 +504,7 @@
         ],
         "comment": [
           "before",
-          "☝ ⏵︎suspend-Gateway_1sq41iq ⏵︎suspend-gw-to-catch-before-Activity_0zsock2"
+          "☝ ⏵︎suspend-Gateway_1sq41iq ⏵︎catch-before-Activity_0zsock2"
         ]
       },
       {
@@ -583,7 +583,7 @@
         ],
         "comment": [
           "before",
-          "☝ ⏵︎suspend-Gateway_1sq41iq ⏵︎suspend-gw-to-catch-before-Activity_0zsock2"
+          "☝ ⏵︎suspend-Gateway_1sq41iq ⏵︎catch-before-Activity_0zsock2"
         ]
       },
       {
@@ -611,11 +611,11 @@
       {
         "tuple": [
           "UI",
-          "suspend-gw-to-catch-before-Activity_0zsock2"
+          "suspend-Gateway_1xs96ik"
         ],
         "comment": [
           "before",
-          "☝ ⏵︎Revise form"
+          "☝ ⏵︎Revise"
         ]
       },
       {
@@ -869,51 +869,19 @@
     "outcome": "success"
   },
   {
-    "id": "catch-before-Activity_0zsock2",
-    "event_label": "☝ ⏵︎Revise form",
+    "id": "catch-before-Activity_1wiumzv",
+    "event_label": "☝ ⏵︎Revise",
     "start_task_position": {
       "tuple": [
         "UI",
-        "catch-before-Activity_0zsock2"
+        "catch-before-Activity_1wiumzv"
       ],
       "comment": [
         "before",
-        "☝ ⏵︎Revise form"
+        "☝ ⏵︎Revise"
       ]
     },
     "start_positions": [
-      {
-        "tuple": [
-          "lifecycle",
-          "suspend-Gateway_01p7uj7"
-        ],
-        "comment": [
-          "before",
-          "⛾ ⏵︎Revise"
-        ]
-      },
-      {
-        "tuple": [
-          "UI",
-          "suspend-gw-to-catch-before-Activity_0zsock2"
-        ],
-        "comment": [
-          "before",
-          "☝ ⏵︎Revise form"
-        ]
-      },
-      {
-        "tuple": [
-          "reviewer",
-          "Event_0g5plbq"
-        ],
-        "comment": [
-          "terminus",
-          ":success"
-        ]
-      }
-    ],
-    "suspend_positions": [
       {
         "tuple": [
           "lifecycle",
@@ -932,6 +900,38 @@
         "comment": [
           "before",
           "☝ ⏵︎Revise"
+        ]
+      },
+      {
+        "tuple": [
+          "reviewer",
+          "Event_0g5plbq"
+        ],
+        "comment": [
+          "terminus",
+          ":success"
+        ]
+      }
+    ],
+    "suspend_positions": [
+      {
+        "tuple": [
+          "lifecycle",
+          "suspend-Gateway_1kl7pnm"
+        ],
+        "comment": [
+          "before",
+          "⛾ ⏵︎Revise ⏵︎Notify approver"
+        ]
+      },
+      {
+        "tuple": [
+          "UI",
+          "suspend-Gateway_1xnsssa"
+        ],
+        "comment": [
+          "before",
+          "☝ ⏵︎Revise form ⏵︎Notify approver"
         ]
       },
       {
@@ -1185,37 +1185,37 @@
     "outcome": "success"
   },
   {
-    "id": "catch-before-Activity_1wiumzv",
-    "event_label": "☝ ⏵︎Revise",
+    "id": "catch-before-Activity_0zsock2",
+    "event_label": "☝ ⏵︎Revise form",
     "start_task_position": {
       "tuple": [
         "UI",
-        "catch-before-Activity_1wiumzv"
+        "catch-before-Activity_0zsock2"
       ],
       "comment": [
         "before",
-        "☝ ⏵︎Revise"
+        "☝ ⏵︎Revise form"
       ]
     },
     "start_positions": [
       {
         "tuple": [
           "lifecycle",
-          "suspend-Gateway_01p7uj7"
+          "suspend-Gateway_1kl7pnm"
         ],
         "comment": [
           "before",
-          "⛾ ⏵︎Revise"
+          "⛾ ⏵︎Revise ⏵︎Notify approver"
         ]
       },
       {
         "tuple": [
           "UI",
-          "suspend-Gateway_1xs96ik"
+          "suspend-Gateway_1xnsssa"
         ],
         "comment": [
           "before",
-          "☝ ⏵︎Revise"
+          "☝ ⏵︎Revise form ⏵︎Notify approver"
         ]
       },
       {
@@ -1243,11 +1243,11 @@
       {
         "tuple": [
           "UI",
-          "suspend-Gateway_1g3fhu2"
+          "suspend-Gateway_1xs96ik"
         ],
         "comment": [
           "before",
-          "☝ ⏵︎Update form ⏵︎Notify approver"
+          "☝ ⏵︎Revise"
         ]
       },
       {

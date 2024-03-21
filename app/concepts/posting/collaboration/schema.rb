@@ -7,7 +7,7 @@ end
 
 module Posting::Collaboration
   Schema = Trailblazer::Workflow.Collaboration(
-    json_file: "app/concepts/posting/posting-v1.json",
+    json_file: "app/concepts/posting/collaboration/generated/posting-v10.json",
     lanes: {
       "article moderation"    => {
         label: "lifecycle",
@@ -60,5 +60,6 @@ module Posting::Collaboration
     state_guards: Posting::Collaboration::StateGuards::Decider,
   )
 
+  # FIXME: this needs to be commented when re-discovering.
   IterationSet = Trailblazer::Workflow::Introspect::Iteration::Set.from_file("app/concepts/posting/collaboration/generated/iteration_set.json", lanes_cfg: Schema.to_h[:lanes])
 end
