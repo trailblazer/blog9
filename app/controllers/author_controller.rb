@@ -25,7 +25,21 @@ class AuthorController < ApplicationController
     trigger "☝ ⏵︎Update", params: params do
       success { |ctx, model:, contract:, **| render :create_form, locals: {contract: contract, form_url: update_posting_path, verb: "Update", model: model} }
       failure { |ctx, contract:, model:, **|
-        render :create_form, locals: {contract: contract, form_url: update_posting_path, verb: "Correct and create", model: model} }
+        render :create_form, locals: {contract: contract, form_url: update_posting_path, verb: "Correct and update", model: model} }
+    end
+  end
+
+  def revise_posting_form
+    trigger "☝ ⏵︎Revise form", params: params do
+      success { |ctx, contract:, model:, **| render :create_form, locals: {contract: contract, form_url: revise_posting_path, verb: "Revise", model: model} }
+    end
+  end
+
+  def revise_posting
+    trigger "☝ ⏵︎Revise", params: params do
+      success { |ctx, model:, contract:, **| render :create_form, locals: {contract: contract, form_url: revise_posting_path, verb: "Revise", model: model} }
+      failure { |ctx, contract:, model:, **|
+        render :create_form, locals: {contract: contract, form_url: revise_posting_path, verb: "Correct and revise", model: model} }
     end
   end
 
@@ -35,7 +49,25 @@ class AuthorController < ApplicationController
     end
   end
 
+  def publish_posting
+    trigger "☝ ⏵︎Publish", params: params, controller: self do
+      success { |ctx, model:, **| redirect_to show_posting_path(model.id) }
+    end
+  end
+
+  def archive_posting
+    trigger "☝ ⏵︎Archive", params: params do
+      success { |ctx, model:, **| redirect_to show_posting_path(model.id) }
+    end
+  end
+
+  def delete_posting
+    trigger "☝ ⏵︎Delete", params: params do
+      success { |ctx, model:, **| redirect_to show_posting_path(model.id) }
+    end
+  end
+
   def show_posting
-    render :show, locals: {model: Posting.find(params[:id]), message: "This posting is waiting for a review."} # TODO: either use OP, or endpoint or add show to <ui>?
+    render :show, locals: {model: Posting.find(params[:id])} # TODO: either use OP, or endpoint or add show to <ui>?
   end
 end

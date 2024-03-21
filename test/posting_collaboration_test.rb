@@ -113,7 +113,7 @@ assert_equal ctx[:contract].content, "Exciting day"
 
 # test: ☝ ⏵︎Revise
 ctx = assert_advance "☝ ⏵︎Revise", test_plan: test_plan, schema: schema, ctx: {params: {posting: {content: "Truly epic"}}, model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
-assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: "revised, review requested", id: original_model.id # FIXME: state label is confusing
+assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: "revised, ready to request review", id: original_model.id # FIXME: state label is confusing
 
 # TODO: test another revision of the author
 

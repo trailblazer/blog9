@@ -1,6 +1,31 @@
 <h1>Posting</h1>
-<%= model.content %>
 
-<p>
-  <%= message %>
-</p>
+<div class="name">
+  <%= model.content %>
+</div>
+
+<div class="name">
+  <%= model.state %>
+</div>
+
+
+<ul>
+  <li>
+    <%= link_to "Update", update_posting_path(model.id) %>
+  </li>
+  <li>
+    <%= link_to "Publish", publish_posting_path(model.id) %>
+  </li>
+  <li>
+    <%= link_to "Archive", archive_posting_path(model.id) %>
+  </li>
+  <li>
+    <%= link_to "Delete", delete_posting_path(model.id) %>
+  </li>
+  <li>
+    <%= link_to "Revise", revise_posting_form_path(model.id) %>
+  </li>
+  <li>
+    <%= link_to "New", create_posting_form_path(model.id) %>
+  </li>
+</ul>

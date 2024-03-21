@@ -10,16 +10,21 @@ module Posting::Operation
 
     # DISCUSS: basic validation?
 
-    step :post_state
+    step :create_review
+    step :posting_state
     step :persist
 
-    def post_state(ctx, model:, **)
+    def posting_state(ctx, model:, **)
       model.state = "edit requested"
     end
 
     # def review_state(ctx, contract:, **)
     #   contract.state = "waiting for edit" # DISCUSS: do we need this?
     # end
+
+    def create_review(ctx, model:, **)
+      ctx[:review] = Review.new(posting_id: model.id)
+    end
 
     def persist(ctx, model:, review:, **)
       model.save

@@ -4,7 +4,7 @@ module Posting::Collaboration
       {
         "⏸︎ Create form"                 => {guard: ->(ctx, model: nil, **) { true }},
         "⏸︎ Create"                      => {guard: ->(ctx, model: nil, **) { true }},
-        "⏸︎ Update form♦Notify approver" => {guard: ->(ctx, model:, **) { ["created", "updated", "revised, review requested"].include?(model.state) }},
+        "⏸︎ Update form♦Notify approver" => {guard: ->(ctx, model:, **) { ["created", "updated", "revised, ready to request review"].include?(model.state) }},
         "⏸︎ Update"                      => {guard: ->(ctx, model:, **) { ["created", "updated"].include?(model.state) }},
         "⏸︎ Approve♦Reject"              => {guard: ->(ctx, model:, **) { ["waiting for review"].include?(model.state) }},
         "⏸︎ Delete? form♦Publish"        => {guard: ->(ctx, model:, **) { ["approved, ready to publish"].include?(model.state) }},

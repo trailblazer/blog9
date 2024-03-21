@@ -7,4 +7,20 @@ class EditorController < ApplicationController
     # end
     render :review_posting, locals: {model: Posting.find(params[:id])} # TODO: either use OP, or endpoint or add show to <ui>?
   end
+
+  def approve_posting
+    trigger "☑ ⏵︎Approve", params: params do #
+      success { |ctx, model:, **| redirect_to editor_dashboard_path }
+    end
+  end
+
+  def reject_posting
+    trigger "☑ ⏵︎Reject", params: params do #
+      success { |ctx, model:, **| redirect_to editor_dashboard_path }
+    end
+  end
+
+  def dashboard
+    render html: "Dashboard"
+  end
 end
