@@ -2,9 +2,11 @@
 
 ## Editor
 
-The workflow for this example is designed using the Trailblazer PRO editor.
+The workflow for this example is designed with our [Trailblazer PRO](https://pro.trailblazer.to) editor.
 
 ![BPMN2 diagram with TRB flavoring for a blog post moderation workflow.](https://github.com/trailblazer/blog9/blob/main/doc/moderation-version-10.png?raw=true)
+
+This is still WIP and will soon look less clumsy.
 
 ## Notes
 
@@ -13,6 +15,8 @@ The workflow for this example is designed using the Trailblazer PRO editor.
 
 ## More notes
 
+```
 rails g trailblazer:pro:install
-rails g trailblazer:pro:import 9661db app/concepts/posting/posting-v1.json
-rails g trailblazer:pro:discover Posting::Collaboration::Schema "<ui> author workflow"  app/concepts/posting/posting-v1-discovered-iterations.json --test test/posting_collaboration_test.rb --failure UI:Create,lifecycle:Create --failure UI:Update,lifecycle:Update
+rails g trailblazer:pro:import 9661db app/concepts/posting/collaboration/generated/posting-v10.json
+rails g trailblazer:pro:discover Posting::Collaboration::Schema "<ui> author workflow"  app/concepts/posting/collaboration/generated/iteration_set.json --test test/posting_collaboration_test.rb --failure UI:Create,lifecycle:Create --failure UI:Update,lifecycle:Update
+```
