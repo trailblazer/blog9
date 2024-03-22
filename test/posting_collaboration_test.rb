@@ -1,24 +1,25 @@
 =begin
-+--------------------+-----------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------+
-| triggered catch    | start configuration                                                                                                   | expected reached configuration                                                                                        |
-+--------------------+-----------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------+
-| ☝ ⏵︎Create form     | ⛾ ⏵︎Create                  ☝ ⏵︎Create form                                                          ☑ ⏵︎Notify          | ⛾ ⏵︎Create                  ☝ ⏵︎Create                                                               ☑ ⏵︎Notify          |
-| ☝ ⏵︎Create          | ⛾ ⏵︎Create                  ☝ ⏵︎Create                                                               ☑ ⏵︎Notify          | ⛾ ⏵︎Update ⏵︎Notify approver ☝ ⏵︎Update form ⏵︎Notify approver                                         ☑ ⏵︎Notify          |
-| ☝ ⏵︎Create ⛞        | ⛾ ⏵︎Create                  ☝ ⏵︎Create                                                               ☑ ⏵︎Notify          | ⛾ ⏵︎Create                  ☝ ⏵︎Create                                                               ☑ ⏵︎Notify          |
-| ☝ ⏵︎Update form     | ⛾ ⏵︎Update ⏵︎Notify approver ☝ ⏵︎Update form ⏵︎Notify approver                                         ☑ ⏵︎Notify          | ⛾ ⏵︎Update ⏵︎Notify approver ☝ ⏵︎Update                                                               ☑ ⏵︎Notify          |
-| ☝ ⏵︎Notify approver | ⛾ ⏵︎Update ⏵︎Notify approver ☝ ⏵︎Update form ⏵︎Notify approver                                         ☑ ⏵︎Notify          | ⛾ ⏵︎Reject ⏵︎Approve         ☝ ⏵︎suspend-Gateway_1sq41iq ⏵︎suspend-gw-to-catch-before-Activity_0zsock2 ☑ ⏵︎Approve ⏵︎Reject |
-| ☝ ⏵︎Update          | ⛾ ⏵︎Update ⏵︎Notify approver ☝ ⏵︎Update                                                               ☑ ⏵︎Notify          | ⛾ ⏵︎Notify approver ⏵︎Update ☝ ⏵︎Update form ⏵︎Notify approver                                         ☑ ⏵︎Notify          |
-| ☑ ⏵︎Approve         | ⛾ ⏵︎Reject ⏵︎Approve         ☝ ⏵︎suspend-Gateway_1sq41iq ⏵︎suspend-gw-to-catch-before-Activity_0zsock2 ☑ ⏵︎Approve ⏵︎Reject | ⛾ ⏵︎Publish ⏵︎Delete ⏵︎Update ☝ ⏵︎Update form ⏵︎Delete? form ⏵︎Publish                                   ☑ ◉End.:success    |
-| ☑ ⏵︎Reject          | ⛾ ⏵︎Reject ⏵︎Approve         ☝ ⏵︎suspend-Gateway_1sq41iq ⏵︎suspend-gw-to-catch-before-Activity_0zsock2 ☑ ⏵︎Approve ⏵︎Reject | ⛾ ⏵︎Revise                  ☝ ⏵︎Revise form                                                          ☑ ◉End.:success    |
-| ☝ ⏵︎Update ⛞        | ⛾ ⏵︎Update ⏵︎Notify approver ☝ ⏵︎Update                                                               ☑ ⏵︎Notify          | ⛾ ⏵︎Update ⏵︎Notify approver ☝ ⏵︎Update                                                               ☑ ⏵︎Notify          |
-| ☝ ⏵︎Delete? form    | ⛾ ⏵︎Publish ⏵︎Delete ⏵︎Update ☝ ⏵︎Update form ⏵︎Delete? form ⏵︎Publish                                   ☑ ◉End.:success    | ⛾ ⏵︎Publish ⏵︎Delete ⏵︎Update ☝ ⏵︎Delete ⏵︎Cancel                                                       ☑ ◉End.:success    |
-| ☝ ⏵︎Publish         | ⛾ ⏵︎Publish ⏵︎Delete ⏵︎Update ☝ ⏵︎Update form ⏵︎Delete? form ⏵︎Publish                                   ☑ ◉End.:success    | ⛾ ⏵︎Archive                 ☝ ⏵︎Archive                                                              ☑ ◉End.:success    |
-| ☝ ⏵︎Revise form     | ⛾ ⏵︎Revise                  ☝ ⏵︎Revise form                                                          ☑ ◉End.:success    | ⛾ ⏵︎Revise                  ☝ ⏵︎Revise                                                               ☑ ◉End.:success    |
-| ☝ ⏵︎Delete          | ⛾ ⏵︎Publish ⏵︎Delete ⏵︎Update ☝ ⏵︎Delete ⏵︎Cancel                                                       ☑ ◉End.:success    | ⛾ ◉End.success             ☝ ◉End.success                                                          ☑ ◉End.:success    |
-| ☝ ⏵︎Cancel          | ⛾ ⏵︎Publish ⏵︎Delete ⏵︎Update ☝ ⏵︎Delete ⏵︎Cancel                                                       ☑ ◉End.:success    | ⛾ ⏵︎Publish ⏵︎Delete ⏵︎Update ☝ ⏵︎Update form ⏵︎Delete? form ⏵︎Publish                                   ☑ ◉End.:success    |
-| ☝ ⏵︎Archive         | ⛾ ⏵︎Archive                 ☝ ⏵︎Archive                                                              ☑ ◉End.:success    | ⛾ ◉End.success             ☝ ◉End.success                                                          ☑ ◉End.:success    |
-| ☝ ⏵︎Revise          | ⛾ ⏵︎Revise                  ☝ ⏵︎Revise                                                               ☑ ◉End.:success    | ⛾ ⏵︎Revise ⏵︎Notify approver ☝ ⏵︎Update form ⏵︎Notify approver                                         ☑ ◉End.:success    |
-+--------------------+-----------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------+
+  +--------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------+
+| triggered catch    | start configuration                                                                                     | expected reached configuration                                                                          |
++--------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------+
+| ☝ ⏵︎Create form     | ⛾ ⏵︎Create                  ☝ ⏵︎Create form                                            ☑ ⏵︎Notify          | ⛾ ⏵︎Create                  ☝ ⏵︎Create                                                 ☑ ⏵︎Notify          |
+| ☝ ⏵︎Create          | ⛾ ⏵︎Create                  ☝ ⏵︎Create                                                 ☑ ⏵︎Notify          | ⛾ ⏵︎Update ⏵︎Notify approver ☝ ⏵︎Update form ⏵︎Notify approver                           ☑ ⏵︎Notify          |
+| ☝ ⏵︎Create ⛞        | ⛾ ⏵︎Create                  ☝ ⏵︎Create                                                 ☑ ⏵︎Notify          | ⛾ ⏵︎Create                  ☝ ⏵︎Create                                                 ☑ ⏵︎Notify          |
+| ☝ ⏵︎Update form     | ⛾ ⏵︎Update ⏵︎Notify approver ☝ ⏵︎Update form ⏵︎Notify approver                           ☑ ⏵︎Notify          | ⛾ ⏵︎Update ⏵︎Notify approver ☝ ⏵︎Update                                                 ☑ ⏵︎Notify          |
+| ☝ ⏵︎Notify approver | ⛾ ⏵︎Update ⏵︎Notify approver ☝ ⏵︎Update form ⏵︎Notify approver                           ☑ ⏵︎Notify          | ⛾ ⏵︎Reject ⏵︎Approve         ☝ ⏵︎suspend-Gateway_1sq41iq ⏵︎catch-before-Activity_0zsock2 ☑ ⏵︎Approve ⏵︎Reject |
+| ☝ ⏵︎Update          | ⛾ ⏵︎Update ⏵︎Notify approver ☝ ⏵︎Update                                                 ☑ ⏵︎Notify          | ⛾ ⏵︎Notify approver ⏵︎Update ☝ ⏵︎Update form ⏵︎Notify approver                           ☑ ⏵︎Notify          |
+| ☑ ⏵︎Approve         | ⛾ ⏵︎Reject ⏵︎Approve         ☝ ⏵︎suspend-Gateway_1sq41iq ⏵︎catch-before-Activity_0zsock2 ☑ ⏵︎Approve ⏵︎Reject | ⛾ ⏵︎Publish ⏵︎Delete ⏵︎Update ☝ ⏵︎Update form ⏵︎Delete? form ⏵︎Publish                     ☑ ◉End.:success    |
+| ☑ ⏵︎Reject          | ⛾ ⏵︎Reject ⏵︎Approve         ☝ ⏵︎suspend-Gateway_1sq41iq ⏵︎catch-before-Activity_0zsock2 ☑ ⏵︎Approve ⏵︎Reject | ⛾ ⏵︎Revise                  ☝ ⏵︎Revise                                                 ☑ ◉End.:success    |
+| ☝ ⏵︎Update ⛞        | ⛾ ⏵︎Update ⏵︎Notify approver ☝ ⏵︎Update                                                 ☑ ⏵︎Notify          | ⛾ ⏵︎Update ⏵︎Notify approver ☝ ⏵︎Update                                                 ☑ ⏵︎Notify          |
+| ☝ ⏵︎Delete? form    | ⛾ ⏵︎Publish ⏵︎Delete ⏵︎Update ☝ ⏵︎Update form ⏵︎Delete? form ⏵︎Publish                     ☑ ◉End.:success    | ⛾ ⏵︎Publish ⏵︎Delete ⏵︎Update ☝ ⏵︎Delete ⏵︎Cancel                                         ☑ ◉End.:success    |
+| ☝ ⏵︎Publish         | ⛾ ⏵︎Publish ⏵︎Delete ⏵︎Update ☝ ⏵︎Update form ⏵︎Delete? form ⏵︎Publish                     ☑ ◉End.:success    | ⛾ ⏵︎Archive                 ☝ ⏵︎Archive                                                ☑ ◉End.:success    |
+| ☝ ⏵︎Revise          | ⛾ ⏵︎Revise                  ☝ ⏵︎Revise                                                 ☑ ◉End.:success    | ⛾ ⏵︎Revise ⏵︎Notify approver ☝ ⏵︎Revise form ⏵︎Notify approver                           ☑ ◉End.:success    |
+| ☝ ⏵︎Delete          | ⛾ ⏵︎Publish ⏵︎Delete ⏵︎Update ☝ ⏵︎Delete ⏵︎Cancel                                         ☑ ◉End.:success    | ⛾ ◉End.success             ☝ ◉End.success                                            ☑ ◉End.:success    |
+| ☝ ⏵︎Cancel          | ⛾ ⏵︎Publish ⏵︎Delete ⏵︎Update ☝ ⏵︎Delete ⏵︎Cancel                                         ☑ ◉End.:success    | ⛾ ⏵︎Publish ⏵︎Delete ⏵︎Update ☝ ⏵︎Update form ⏵︎Delete? form ⏵︎Publish                     ☑ ◉End.:success    |
+| ☝ ⏵︎Archive         | ⛾ ⏵︎Archive                 ☝ ⏵︎Archive                                                ☑ ◉End.:success    | ⛾ ◉End.success             ☝ ◉End.success                                            ☑ ◉End.:success    |
+| ☝ ⏵︎Revise ⛞        | ⛾ ⏵︎Revise                  ☝ ⏵︎Revise                                                 ☑ ◉End.:success    | ⛾ ⏵︎Revise                  ☝ ⏵︎Revise                                                 ☑ ◉End.:success    |
+| ☝ ⏵︎Revise form     | ⛾ ⏵︎Revise ⏵︎Notify approver ☝ ⏵︎Revise form ⏵︎Notify approver                           ☑ ◉End.:success    | ⛾ ⏵︎Revise ⏵︎Notify approver ☝ ⏵︎Revise                                                 ☑ ◉End.:success    |
++--------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------+
 =end
 
 require "test_helper"
@@ -115,7 +116,11 @@ assert_equal ctx[:contract].content, "Exciting day"
 ctx = assert_advance "☝ ⏵︎Revise", test_plan: test_plan, schema: schema, ctx: {params: {posting: {content: "Truly epic"}}, model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
 assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: "revised, ready to request review", id: original_model.id # FIXME: state label is confusing
 
-# TODO: test another revision of the author
+# test: ☝ ⏵︎Revise ⛞
+ctx = assert_advance "☝ ⏵︎Revise ⛞", test_plan: test_plan, schema: schema, ctx: {params: {posting: {content: ""}}, model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
+assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: "revised, ready to request review", id: original_model.id # {content} hasn't changed.
+
+
 
 # test: ☝ ⏵︎Notify approver
 ctx = assert_advance "☝ ⏵︎Notify approver", test_plan: test_plan, schema: schema, ctx: {params: {}, model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
