@@ -4,8 +4,8 @@ module Posting::Collaboration
       {
         "⏸︎ Create form"                 => {guard: ->(ctx, model: nil, **) { true }},
         "⏸︎ Create"                      => {guard: ->(ctx, model: nil, **) { true }},
-        "⏸︎ Update form♦Notify approver" => {guard: ->(ctx, model:, **) { ["created", "updated", "revised, ready to request review", "approved, ready to publish"].include?(model.state) }},
-        "⏸︎ Update"                      => {guard: ->(ctx, model:, **) { ["created", "updated", "revised, ready to request review", "approved, ready to publish"].include?(model.state) }},
+        "⏸︎ Update form♦Notify approver" => {guard: ->(ctx, model:, **) { ["created", "updated", "approved, ready to publish"].include?(model.state) }}, # the number of states equals the number of incoming links in the lifecycle task.
+        "⏸︎ Update"                      => {guard: ->(ctx, model:, **) { ["created", "updated", "approved, ready to publish"].include?(model.state) }},  # backtrack all incoming success paths eg. into Update
         "⏸︎ Approve♦Reject"              => {guard: ->(ctx, model:, **) { ["waiting for review"].include?(model.state) }},
         "⏸︎ Delete? form♦Publish"        => {guard: ->(ctx, model:, **) { ["approved, ready to publish"].include?(model.state) }},
         "⏸︎ Delete♦Cancel"               => {guard: ->(ctx, model:, **) { ["approved, ready to publish"].include?(model.state) }},
