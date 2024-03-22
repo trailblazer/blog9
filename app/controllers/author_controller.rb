@@ -61,9 +61,24 @@ class AuthorController < ApplicationController
     end
   end
 
+  # NOTE: you can also manually trigger the "Delete" link directly. we could show how to add an additional "UI state", not on the model?
+  def delete_posting_form
+    trigger "☝ ⏵︎Delete? form", params: params do
+      success { |ctx, model:, **| render :delete_form, locals: {model: model} }
+    end
+  end
+
+  # This is an example of how to handle such type of action - no need
+  # to explicitly model a "cancel" button like this.
+  def cancel_delete_posting
+    trigger "☝ ⏵︎Cancel", params: params do
+      success { |ctx, model:, **| redirect_to show_posting_path(model.id) }
+    end
+  end
+
   def delete_posting
     trigger "☝ ⏵︎Delete", params: params do
-      success { |ctx, model:, **| redirect_to show_posting_path(model.id) }
+      success { |ctx, model:, **| redirect_to create_posting_form_path }
     end
   end
 

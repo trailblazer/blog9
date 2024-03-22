@@ -21,6 +21,8 @@ Rails.application.routes.draw do
   get "postings/:id/publish" => "author#publish_posting", as: :publish_posting
   get "postings/:id/archive" => "author#archive_posting", as: :archive_posting
   get "postings/:id/delete" => "author#delete_posting", as: :delete_posting
+  get "postings/:id/cancel_delete" => "author#cancel_delete_posting", as: :cancel_delete_posting
+  get "postings/:id/delete_form" => "author#delete_posting_form", as: :delete_posting_form
 
   get "postings/:id/show" => "author#show_posting", as: :show_posting
 

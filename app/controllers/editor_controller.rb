@@ -10,7 +10,8 @@ class EditorController < ApplicationController
 
   def approve_posting
     trigger "☑ ⏵︎Approve", params: params do #
-      success { |ctx, model:, **| redirect_to editor_dashboard_path }
+      # success { |ctx, model:, **| redirect_to editor_dashboard_path }
+      success { |ctx, model:, **| redirect_to show_posting_path(model.id) }
     end
   end
 

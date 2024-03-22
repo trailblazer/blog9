@@ -20,7 +20,7 @@
     <%= link_to "Archive", archive_posting_path(model.id) %>
   </li>
   <li>
-    <%= link_to "Delete", delete_posting_path(model.id) %>
+    <%= link_to "Delete", delete_posting_form_path(model.id) %>
   </li>
   <li>
     <%= link_to "Revise", revise_posting_form_path(model.id) %>
@@ -28,4 +28,8 @@
   <li>
     <%= link_to "New", create_posting_form_path(model.id) %>
   </li>
+  <li>
+    <%= link_to "Review", review_posting_path(model.id) %>
+  </li>
+
 </ul>
