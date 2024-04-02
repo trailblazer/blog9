@@ -11,7 +11,8 @@ module Posting::Operation
     step Contract::Persist()
 
     def state(ctx, contract:, **)
-      contract.state = "updated"
+      # contract.state = "updated"
+      contract.state = "⏸︎ Update form♦Notify approver [110]"
     end
   end
 end

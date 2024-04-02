@@ -11,7 +11,8 @@ module Posting::Operation
     end
 
     def state(ctx, model:, **)
-      model.state = "waiting for review"
+      # model.state = "waiting for review"
+      model.state = "⏸︎ Approve♦Reject [000]"
       model.save
     end
   end

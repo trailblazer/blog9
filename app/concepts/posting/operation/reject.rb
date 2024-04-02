@@ -15,7 +15,8 @@ module Posting::Operation
     step :persist
 
     def posting_state(ctx, model:, **)
-      model.state = "edit requested"
+      # model.state = "edit requested"
+      model.state = "⏸︎ Revise [010]"
     end
 
     # def review_state(ctx, contract:, **)

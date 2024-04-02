@@ -10,6 +10,7 @@ module Posting::Operation
 
     def state(ctx, model:, **)
       model.state = "published"
+      model.state = "⏸︎ Archive [100]"
       model.save
     end
 
