@@ -39,7 +39,12 @@ class Posting_CollaborationCollaborationTest < Minitest::Spec
   it "can run the collaboration" do
     state_map_fixme = {
       "created" => "⏸︎ Update form♦Notify approver [000]",
-      "waiting for review" => "⏸︎ Approve♦Reject [000]"
+      "waiting for review" => "⏸︎ Approve♦Reject [000]",
+      "approved, ready to publish" => "⏸︎ Update form♦Delete? form♦Publish [110]",
+      "published" => "⏸︎ Archive [100]",
+      "updated" => "⏸︎ Update form♦Notify approver [110]",
+      "edit requested" => "⏸︎ Revise [010]",
+      "revised, ready to request review" => "⏸︎ Revise form♦Notify approver [110]",
     }
 
     schema = Posting::Collaboration::Schema
@@ -70,18 +75,19 @@ class Posting_CollaborationCollaborationTest < Minitest::Spec
 
   #@ invalid transition
   # test: ☝ ⏵︎Publish
-  ctx = assert_advance "☝ ⏵︎Publish", test_plan: test_plan, schema: schema, ctx: {params: {}, model: ctx[:model]}, invalid: true
+  ctx = assert_advance "☝ ⏵︎Publish", test_plan: test_plan, schema: schema, ctx: {params: {}, model: ctx[:model]},
+    invalid: true
   assert_exposes ctx[:model], persisted?: true, content: "Exciting times!", state: state_map_fixme["waiting for review"] # still in old mode.
 
 
     # test: ☑ ⏵︎Approve
     ctx = assert_advance "☑ ⏵︎Approve", test_plan: test_plan, schema: schema, ctx: {params: {}, model: ctx[:model]}
-    assert_exposes ctx[:model], persisted?: true, content: "Exciting times!", state: "approved, ready to publish"
+    assert_exposes ctx[:model], persisted?: true, content: "Exciting times!", state: state_map_fixme["approved, ready to publish"]
 
 
     # test: ☝ ⏵︎Publish
     ctx = assert_advance "☝ ⏵︎Publish", test_plan: test_plan, schema: schema, ctx: {params: {}, model: ctx[:model], controller: Rails.application.routes.url_helpers}
-    assert_exposes ctx[:model], persisted?: true, content: "Exciting times!", state: "published"
+    assert_exposes ctx[:model], persisted?: true, content: "Exciting times!", state: state_map_fixme["published"]
 
 
     # test: ☝ ⏵︎Archive
@@ -103,7 +109,7 @@ assert_equal ctx[:contract].content, "Exciting times!"
 
 # test: ☝ ⏵︎Update
 ctx = assert_advance "☝ ⏵︎Update", test_plan: test_plan, schema: schema, ctx: {params: {posting: {content: "Exciting day"}}, model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
-assert_exposes ctx[:model], persisted?: true, content: "Exciting day", state: "updated"
+assert_exposes ctx[:model], persisted?: true, content: "Exciting day", state: state_map_fixme["updated"]
   assert_equal original_model.id, ctx[:model].id
 
 # test: ☝ ⏵︎Notify approver
@@ -113,7 +119,7 @@ assert_exposes ctx[:model], persisted?: true, content: "Exciting day", state: st
 
 # test: ☑ ⏵︎Reject
 ctx = assert_advance "☑ ⏵︎Reject", test_plan: test_plan, schema: schema, ctx: {model: ctx[:model], review: Review.new(suggestions: "you can do better!", posting_id: ctx[:model].id)}, flow_options: Blog9::FLOW_OPTIONS
-assert_exposes ctx[:model], persisted?: true, content: "Exciting day", state: "edit requested"
+assert_exposes ctx[:model], persisted?: true, content: "Exciting day", state: state_map_fixme["edit requested"]
 assert_equal ctx[:model].review.posting, ctx[:model]
 
 # test: ☝ ⏵︎Revise form
@@ -123,11 +129,13 @@ assert_equal ctx[:contract].content, "Exciting day"
 
 # test: ☝ ⏵︎Revise
 ctx = assert_advance "☝ ⏵︎Revise", test_plan: test_plan, schema: schema, ctx: {params: {posting: {content: "Truly epic"}}, model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
-assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: "revised, ready to request review", id: original_model.id # FIXME: state label is confusing
+assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: state_map_fixme["revised, ready to request review"], id: original_model.id # FIXME: state label is confusing
 
 # test: ☝ ⏵︎Revise ⛞
-ctx = assert_advance "☝ ⏵︎Revise ⛞", test_plan: test_plan, schema: schema, ctx: {params: {posting: {content: ""}}, model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
-assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: "revised, ready to request review", id: original_model.id # {content} hasn't changed.
+rejected_model = ctx[:model]
+rejected_model.state = state_map_fixme["edit requested"] # DISCUSS: how can we automate state snapshots?
+ctx = assert_advance "☝ ⏵︎Revise ⛞", test_plan: test_plan, schema: schema, ctx: {params: {posting: {content: ""}}, model: rejected_model}, flow_options: Blog9::FLOW_OPTIONS
+assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: state_map_fixme["revised, ready to request review"], id: original_model.id # {content} hasn't changed.
 
 
 

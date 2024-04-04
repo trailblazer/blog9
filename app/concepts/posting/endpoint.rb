@@ -13,11 +13,11 @@ class Posting
     end
 
     Protocol = Trailblazer::Endpoint.build_protocol(Template, domain_activity: Trailblazer::Workflow::Advance,
-      protocol_block: ->(*) { {Trailblazer::Activity::Railway.Output(:not_authorized) => Trailblazer::Activity::Railway.Track(:not_authorized)} } # TODO: do this automatically!
+      protocol_block: ->(*) { {Trailblazer::Activity::Railway.Output(:invalid_event) => Trailblazer::Activity::Railway.Track(:not_authorized)} } # TODO: do this automatically!
     )
 
     Protocol::Model = Trailblazer::Endpoint.build_protocol(Template::Model, domain_activity: Trailblazer::Workflow::Advance,
-      protocol_block: ->(*) { {Trailblazer::Activity::Railway.Output(:not_authorized) => Trailblazer::Activity::Railway.Track(:not_authorized)} }
+      protocol_block: ->(*) { {Trailblazer::Activity::Railway.Output(:invalid_event) => Trailblazer::Activity::Railway.Track(:not_authorized)} }
     )
 
     Adapter = Trailblazer::Endpoint::Adapter.build(Protocol) # build the simplest Adapter we got.
