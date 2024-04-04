@@ -37,6 +37,11 @@ class Posting_CollaborationCollaborationTest < Minitest::Spec
 
 
   it "can run the collaboration" do
+    state_map_fixme = {
+      "created" => "⏸︎ Update form♦Notify approver [000]",
+      "waiting for review" => "⏸︎ Approve♦Reject [000]"
+    }
+
     schema = Posting::Collaboration::Schema
     # TODO: do this in an initializer?
     test_plan = Trailblazer::Workflow::Introspect::Iteration::Set::Deserialize.(JSON.parse(File.read("app/concepts/posting/collaboration/generated/iteration_set.json")), lanes_cfg: schema.to_h[:lanes])
@@ -55,18 +60,18 @@ class Posting_CollaborationCollaborationTest < Minitest::Spec
     # test: ☝ ⏵︎Create
     ctx = assert_advance "☝ ⏵︎Create", test_plan: test_plan, schema: schema, ctx: {params: {posting: {content: "Exciting times!"}}}, flow_options: Blog9::FLOW_OPTIONS
     assert_equal ctx[:contract].class, Posting::Operation::Create::Form
-    assert_exposes ctx[:model], persisted?: true, content: "Exciting times!", state: "created"
+    assert_exposes ctx[:model], persisted?: true, content: "Exciting times!", state: state_map_fixme["created"]
 
     original_model = ctx[:model]
 
     # test: ☝ ⏵︎Notify approver
     ctx = assert_advance "☝ ⏵︎Notify approver", test_plan: test_plan, schema: schema, ctx: {params: {}, model: ctx[:model]}
-    assert_exposes ctx[:model], persisted?: true, content: "Exciting times!", state: "waiting for review"
+    assert_exposes ctx[:model], persisted?: true, content: "Exciting times!", state: state_map_fixme["waiting for review"]
 
   #@ invalid transition
   # test: ☝ ⏵︎Publish
   ctx = assert_advance "☝ ⏵︎Publish", test_plan: test_plan, schema: schema, ctx: {params: {}, model: ctx[:model]}, invalid: true
-  assert_exposes ctx[:model], persisted?: true, content: "Exciting times!", state: "waiting for review" # still in old mode.
+  assert_exposes ctx[:model], persisted?: true, content: "Exciting times!", state: state_map_fixme["waiting for review"] # still in old mode.
 
 
     # test: ☑ ⏵︎Approve
@@ -87,7 +92,7 @@ class Posting_CollaborationCollaborationTest < Minitest::Spec
 # rerun: ☝ ⏵︎Create
 ctx = assert_advance "☝ ⏵︎Create", test_plan: test_plan, schema: schema, ctx: {params: {posting: {content: "Exciting times!"}}}, flow_options: Blog9::FLOW_OPTIONS
 assert_equal ctx[:contract].class, Posting::Operation::Create::Form
-assert_exposes ctx[:model], persisted?: true, content: "Exciting times!", state: "created"
+assert_exposes ctx[:model], persisted?: true, content: "Exciting times!", state: state_map_fixme["created"]
 
 original_model = ctx[:model]
 
@@ -103,7 +108,7 @@ assert_exposes ctx[:model], persisted?: true, content: "Exciting day", state: "u
 
 # test: ☝ ⏵︎Notify approver
 ctx = assert_advance "☝ ⏵︎Notify approver", test_plan: test_plan, schema: schema, ctx: {params: {}, model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
-assert_exposes ctx[:model], persisted?: true, content: "Exciting day", state: "waiting for review"
+assert_exposes ctx[:model], persisted?: true, content: "Exciting day", state: state_map_fixme["waiting for review"]
 
 
 # test: ☑ ⏵︎Reject
@@ -128,7 +133,7 @@ assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: "rev
 
 # test: ☝ ⏵︎Notify approver
 ctx = assert_advance "☝ ⏵︎Notify approver", test_plan: test_plan, schema: schema, ctx: {params: {}, model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
-assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: "waiting for review"
+assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: state_map_fixme["waiting for review"]
 
 # test: ☑ ⏵︎Approve
 ctx = assert_advance "☑ ⏵︎Approve", test_plan: test_plan, schema: schema, ctx: {params: {}, model: ctx[:model]}
