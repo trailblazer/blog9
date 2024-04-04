@@ -21,6 +21,7 @@
 | ☝ ⏵︎Cancel          | ⛾ ⏵︎Publish ⏵︎Delete ⏵︎Update <1hp2> ☝ ⏵︎Delete ⏵︎Cancel <100g>                                                       ☑ ⏵︎Notify <05zi>          | ⛾ ⏵︎Publish ⏵︎Delete ⏵︎Update <1hp2> ☝ ⏵︎Update form ⏵︎Delete? form ⏵︎Publish <1sq4>                                   ☑ ⏵︎Notify <05zi>          |
 | ☝ ⏵︎Archive         | ⛾ ⏵︎Archive <1hgs>                 ☝ ⏵︎Archive <0fy4>                                                              ☑ ⏵︎Notify <05zi>          | ⛾ ◉End.success <1p88>             ☝ ◉End.success <0h6y>                                                          ☑ ⏵︎Notify <05zi>          |
 | ☝ ⏵︎Revise          | ⛾ ⏵︎Revise <01p7>                  ☝ ⏵︎Revise <1xs9>                                                               ☑ ⏵︎Notify <05zi>          | ⛾ ⏵︎Revise ⏵︎Notify approver <1kl7> ☝ ⏵︎Revise form ⏵︎Notify approver <1xns>                                         ☑ ⏵︎Notify <05zi>          |
+| ☝ ⏵︎Revise ⛞        | ⛾ ⏵︎Revise <01p7>                  ☝ ⏵︎Revise <1xs9>                                                               ☑ ⏵︎Notify <05zi>          | ⛾ ⏵︎Revise <01p7>                  ☝ ⏵︎Revise <1xs9>                                                               ☑ ⏵︎Notify <05zi>          |
 | ☝ ⏵︎Revise form     | ⛾ ⏵︎Revise ⏵︎Notify approver <1kl7> ☝ ⏵︎Revise form ⏵︎Notify approver <1xns>                                         ☑ ⏵︎Notify <05zi>          | ⛾ ⏵︎Revise ⏵︎Notify approver <1kl7> ☝ ⏵︎Revise <1xs9>                                                               ☑ ⏵︎Notify <05zi>          |
 | ☝ ⏵︎Notify approver | ⛾ ⏵︎Revise ⏵︎Notify approver <1kl7> ☝ ⏵︎Revise form ⏵︎Notify approver <1xns>                                         ☑ ⏵︎Notify <05zi>          | ⛾ ⏵︎Reject ⏵︎Approve <0y3f>         ☝ ⏵︎suspend-Gateway_1sq41iq ⏵︎suspend-gw-to-catch-before-Activity_0zsock2 <063k> ☑ ⏵︎Approve ⏵︎Reject <02ve> |
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------+
@@ -45,6 +46,7 @@ class Posting_CollaborationCollaborationTest < Minitest::Spec
       "updated" => "⏸︎ Update form♦Notify approver [110]",
       "edit requested" => "⏸︎ Revise [010]",
       "revised, ready to request review" => "⏸︎ Revise form♦Notify approver [110]",
+      "approved, ready to publish" => "⏸︎ Update form♦Delete? form♦Publish [110]",
     }
 
     schema = Posting::Collaboration::Schema
@@ -130,22 +132,23 @@ assert_equal ctx[:contract].content, "Exciting day"
 # test: ☝ ⏵︎Revise
 ctx = assert_advance "☝ ⏵︎Revise", test_plan: test_plan, schema: schema, ctx: {params: {posting: {content: "Truly epic"}}, model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
 assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: state_map_fixme["revised, ready to request review"], id: original_model.id # FIXME: state label is confusing
+revised_model = ctx[:model]
 
 # test: ☝ ⏵︎Revise ⛞
-rejected_model = ctx[:model]
-rejected_model.state = state_map_fixme["edit requested"] # DISCUSS: how can we automate state snapshots?
+rejected_model = Posting.create(state: state_map_fixme["edit requested"], content: ctx[:model].content)
+# rejected_model.state = state_map_fixme["edit requested"] # DISCUSS: how can we automate state snapshots?
 ctx = assert_advance "☝ ⏵︎Revise ⛞", test_plan: test_plan, schema: schema, ctx: {params: {posting: {content: ""}}, model: rejected_model}, flow_options: Blog9::FLOW_OPTIONS
-assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: state_map_fixme["revised, ready to request review"], id: original_model.id # {content} hasn't changed.
+assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: state_map_fixme["edit requested"], id: rejected_model.id # {content} hasn't changed.
 
 
 
 # test: ☝ ⏵︎Notify approver
-ctx = assert_advance "☝ ⏵︎Notify approver", test_plan: test_plan, schema: schema, ctx: {params: {}, model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
+ctx = assert_advance "☝ ⏵︎Notify approver", test_plan: test_plan, schema: schema, ctx: {params: {}, model: revised_model}, flow_options: Blog9::FLOW_OPTIONS
 assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: state_map_fixme["waiting for review"]
 
 # test: ☑ ⏵︎Approve
 ctx = assert_advance "☑ ⏵︎Approve", test_plan: test_plan, schema: schema, ctx: {params: {}, model: ctx[:model]}
-assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: "approved, ready to publish"
+assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: state_map_fixme["approved, ready to publish"]
 
 # test: ☝ ⏵︎Delete? form
 ctx = assert_advance "☝ ⏵︎Delete? form", test_plan: test_plan, schema: schema, ctx: {model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
@@ -154,11 +157,11 @@ assert_equal ctx[:model].id, original_model.id # we need the ID as a hidden fiel
 
 # test: ☝ ⏵︎Cancel
 ctx = assert_advance "☝ ⏵︎Cancel", test_plan: test_plan, schema: schema, ctx: {model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
-assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: "approved, ready to publish"
+assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: state_map_fixme["approved, ready to publish"]
 
 # test: ☝ ⏵︎Delete
 ctx = assert_advance "☝ ⏵︎Delete", test_plan: test_plan, schema: schema, ctx: {model: ctx[:model]}, flow_options: Blog9::FLOW_OPTIONS
-assert_exposes ctx[:model], persisted?: false, content: "Truly epic", state: "approved, ready to publish", id: original_model.id
+assert_exposes ctx[:model], persisted?: false, content: "Truly epic", state: state_map_fixme["approved, ready to publish"], id: original_model.id
 
 # TEST INVALID FORM SUBMISSIONS
 # test: ☝ ⏵︎Create ⛞
