@@ -120,7 +120,7 @@ assert_exposes ctx[:model], persisted?: true, content: "Exciting day", state: st
 
 
 # test: ☑ ⏵︎Reject
-ctx = assert_advance "☑ ⏵︎Reject", test_plan: test_plan, schema: schema, ctx: {model: ctx[:model], review: Review.new(suggestions: "you can do better!", posting_id: ctx[:model].id)}, flow_options: Blog9::FLOW_OPTIONS
+ctx = assert_advance "☑ ⏵︎Reject", test_plan: test_plan, schema: schema, ctx: {model: ctx[:model], review: ___review = Review.new(suggestions: "you can do better!", posting_id: ctx[:model].id)}, flow_options: Blog9::FLOW_OPTIONS
 assert_exposes ctx[:model], persisted?: true, content: "Exciting day", state: state_map_fixme["edit requested"]
 assert_equal ctx[:model].review.posting, ctx[:model]
 
@@ -135,7 +135,7 @@ assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: stat
 revised_model = ctx[:model]
 
 # test: ☝ ⏵︎Revise ⛞
-rejected_model = Posting.create(state: state_map_fixme["edit requested"], content: ctx[:model].content)
+rejected_model = Posting.create(state: state_map_fixme["edit requested"], content: ctx[:model].content, review: ___review)
 # rejected_model.state = state_map_fixme["edit requested"] # DISCUSS: how can we automate state snapshots?
 ctx = assert_advance "☝ ⏵︎Revise ⛞", test_plan: test_plan, schema: schema, ctx: {params: {posting: {content: ""}}, model: rejected_model}, flow_options: Blog9::FLOW_OPTIONS
 assert_exposes ctx[:model], persisted?: true, content: "Truly epic", state: state_map_fixme["edit requested"], id: rejected_model.id # {content} hasn't changed.
