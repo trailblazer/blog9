@@ -9,7 +9,7 @@ module Posting::Collaboration
   Schema = Trailblazer::Workflow.Collaboration(
     json_file: "app/concepts/posting/collaboration/generated/posting-v10.json",
     lanes: {
-      "article moderation"    => {
+      "⛾.lifecycle.posting"    => {
         label: "lifecycle",
         icon:  "⛾",
         implementation: {
@@ -24,7 +24,7 @@ module Posting::Collaboration
           "Delete" => Trailblazer::Activity::Railway.Subprocess(Posting::Operation::Delete),
         }
       },
-      "<ui> author workflow"  => {
+      "☝.UI.blogger"  => {
         label: "UI",
         icon:  "☝",
         implementation: {
@@ -46,7 +46,7 @@ module Posting::Collaboration
 
         }
       },
-      "reviewer" => { # TODO: no warning about missing config, yet.
+      "☑.editor.reviewer" => { # TODO: no warning about missing config, yet.
         label: "reviewer",
         icon: "☑",
         implementation: {
