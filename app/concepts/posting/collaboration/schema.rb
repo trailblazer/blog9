@@ -7,7 +7,7 @@ end
 
 module Posting::Collaboration
   Schema = Trailblazer::Workflow.Collaboration(
-    json_file: "app/concepts/posting/collaboration/generated/posting-v10.json",
+    json_file: "app/concepts/posting/collaboration/generated/posting-v11.json",
     lanes: {
       "⛾.lifecycle.posting"    => {
         label: "lifecycle",
