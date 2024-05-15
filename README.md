@@ -17,6 +17,12 @@ This is still WIP and will soon look less clumsy.
 
 ```
 rails g trailblazer:pro:install
-rails g trailblazer:pro:import 9661db app/concepts/posting/collaboration/generated/posting-v10.json
-rails g trailblazer:pro:discover Posting::Collaboration::Schema "<ui> author workflow"  app/concepts/posting/collaboration/generated/iteration_set.json --test test/posting_collaboration_test.rb --failure UI:Create,lifecycle:Create --failure UI:Update,lifecycle:Update --failure UI:Revise,lifecycle:Revise
+rails g trailblazer:pro:import 9661db app/concepts/posting/collaboration/generated/posting-v11.json
+
+rails g trailblazer:pro:discover app/concepts/posting/collaboration/generated/posting-v11.json  --namespace Posting::Collaboration   --test test/posting_collaboration_test.rb --failure UI:Create,lifecycle:Create --failure UI:Update,lifecycle:Update --failure UI:Revise,lifecycle:Revise --start_lane "UI"
+
+
+rails g trailblazer:pro:discover app/concepts/posting/collaboration/generated/posting-v11.json --namespace Posting::Collaboration --test test/posting_collaboration_test.rb --start_lane UI --failure UI:Create,lifecycle:Create --failure UI:Update,lifecycle:Update --failure UI:Revise,lifecycle:Revise
+
+rails g trailblazer:pro:discover app/concepts/posting/collaboration/generated/posting-v11.json --namespace Posting::Collaboration --test test/posting_collaboration_test.rb --start_lane UI --failure UI:Create,⛾.lifecycle.posting:Create --failure UI:Update,⛾.lifecycle.posting:Update --failure UI:Revise,⛾.lifecycle.posting:Revise
 ```

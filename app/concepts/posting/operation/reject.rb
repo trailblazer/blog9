@@ -16,7 +16,7 @@ module Posting::Operation
 
     def posting_state(ctx, model:, **)
       # model.state = "edit requested"
-      model.state = "⏸︎ Revise [010]"
+      model.state = "⏸︎ Revise form [000]"
     end
 
     # def review_state(ctx, contract:, **)
