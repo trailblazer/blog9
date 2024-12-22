@@ -55,6 +55,8 @@ group :development, :test do
   gem "trailblazer-test", path: "../trailblazer-test"
   gem "trailblazer-pro", path: "../trailblazer-pro"
   gem "trailblazer-pro-rails", path: "../trailblazer-pro-rails"
+  gem "trailblazer-workflow-rails", path: "../trailblazer-workflow-rails"
+  # gem "trailblazer-activity-dsl-linear", path: "../trailblazer-activity-dsl-linear"
 end
 
 group :development do

@@ -33,8 +33,8 @@ Posting::Endpoint
 
 class Posting_CollaborationCollaborationTest < Minitest::Spec
   include Trailblazer::Workflow::Test::Assertions
-  require "trailblazer/test/assertions"
-  include Trailblazer::Test::Assertions # DISCUSS: this is for assert_advance and friends.
+  require "trailblazer/test"
+  include Trailblazer::Test::Assertion::AssertExposes # DISCUSS: this is for assert_advance and friends.
 
 
   it "can run the collaboration" do

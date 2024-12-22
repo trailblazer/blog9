@@ -13,9 +13,19 @@ class WorkflowController < ApplicationController
     end
 
   endpoint do
-    ctx do
+    ctx do |controller:, **|
       {
-        params: params,
+        params: controller.params,
+      }
+    end
+
+    flow_options do
+      Blog9::FLOW_OPTIONS # this gets merged in {#_flow_options}.
+    end
+
+    default_matcher do
+      {
+        not_authorized: ->(ctx, **) { render html: "You are not authorized." }
       }
     end
   end

@@ -9,7 +9,7 @@ module Posting::Collaboration
   Schema = Trailblazer::Workflow.Collaboration(
     json_file: "app/concepts/posting/collaboration/generated/posting-v11.json",
     lanes: {
-      "⛾.lifecycle.posting"    => {
+      "⛾.lifecycle.posting" => {
         label: "lifecycle",
         icon:  "⛾",
         implementation: {
@@ -24,7 +24,7 @@ module Posting::Collaboration
           "Delete" => Trailblazer::Activity::Railway.Subprocess(Posting::Operation::Delete),
         }
       },
-      "☝.UI.blogger"  => {
+      "☝.UI.blogger" => {
         label: "UI",
         icon:  "☝",
         implementation: {
@@ -46,7 +46,7 @@ module Posting::Collaboration
 
         }
       },
-      "☑.editor.reviewer" => { # TODO: no warning about missing config, yet.
+      "☑.editor.reviewer" => {
         label: "reviewer",
         icon: "☑",
         implementation: {
@@ -60,6 +60,5 @@ module Posting::Collaboration
     state_guards: Posting::Collaboration::StateGuards::Decider,
   )
 
-  # FIXME: this needs to be commented when re-discovering.
   IterationSet = Trailblazer::Workflow::Introspect::Iteration::Set.from_file("app/concepts/posting/collaboration/generated/iteration_set.json", lanes_cfg: Schema.to_h[:lanes])
 end
